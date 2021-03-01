@@ -1,0 +1,9 @@
+{
+   Gcreen leak
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:create_named_test_suite_
+   ...
+   fun:main
+}

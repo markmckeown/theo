@@ -1,0 +1,47 @@
+#!/bin/bash
+#
+# Usage:
+#   limit_coverage <genhtml stdout filename> <limit as integer> 
+#
+# This script return 0 if the coverage is fine (and is silent)
+# or emits an error and returns 1 if the coverage is below the
+# limit.
+
+filename=$1
+limit=$2
+# If the coverage drops within one of the target we issue a warning
+warning_limit=$((limit+1))
+
+function error_exit()
+{
+    echo $1
+    exit 1
+}
+
+
+if [ -z "${filename}" ]; then
+    error_exit "No filename supplied"
+fi
+
+if [ -z "${limit}" ]; then
+    error_exit "No limit supplied"
+fi
+
+if [ ! -f "${filename}" ]; then
+    error_exit "Coverage file not found; expected [$filename]"
+fi
+
+line_coverage=`tail -4 ${filename} | grep -e "^  lines" | awk '{print $2}' | sed -e 's/\.[0-9][0-9]*%//g'` 
+if [ -z "${line_coverage}" ]; then
+    error_exit "Failed to find line coverage summary!"
+fi
+
+if [ ${line_coverage} -le  ${warning_limit} ]; then
+    echo "WARNING, WARNING coverage is low, coverage ~${line_coverage}%, target ${limit}%"
+fi 
+
+if [ ${line_coverage} -lt ${limit} ]; then
+    error_exit "Coverage is down to ~${line_coverage}% line coverage, below the project's ${limit}% limit!"
+fi
+
+exit 0

@@ -1,0 +1,227 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use Term::ANSIColor qw(:constants);
+use Getopt::Long;
+use Pod::Usage;
+use Data::Dumper;
+use Benchmark qw(:all :hireswallclock);
+
+my $failcount = 0;
+my $help = 0;        # Should we show help?
+my $man = 0;         # Should we show the manual?
+my $exe;             # A named Cgreen exe to run
+my $suite;           # A named Check suite to run
+my $completion = 0;  # Run to completion
+my $ld_library_path; # For cgreen
+my @tests;           # The list of test exes from module.mk files
+
+sub print_error {
+    my $message = shift;
+    print RED, UNDERLINE, "ERROR: ", RESET, RED, "$message\n", RESET;
+}
+
+sub print_error_and_exit {
+    my $message = shift;
+    print_error($message); 
+    exit 1;
+}
+
+sub should_skip_line {
+    my ($line) = @_;
+
+    # Default test runner noisy, no need to print duplicate test name for each test
+    # in suite. Say nothing.
+    return 1 if ($line =~ /Running ["_a-zA-Z0-9\(\):]+/);
+
+    # Do nothing, this is an expected assert in a
+    # successful test.
+    return 1 if ($line =~ /: [_a-zA-Z0-9\/\.]+:[0-9]+: Assertion.*failed\.$/);
+
+    # Do nothing, this is a trace emit needed to ensure
+    # coverage, but is part of a successful test.
+    return 1 if ($line =~ /MUST_EMIT_FOR_COVERAGE/);
+
+    return 0;
+}
+
+sub print_output {
+    my ($output_ref, $status) = @_;
+
+    my $debugging_mocks = 0;
+    my $size = @$output_ref;
+
+    for my $i (0..($size-1)) {
+        my $line = $output_ref->[$i];
+        if ($i == ($size-1)) {
+            if ($status == 0) {
+                print GREEN, "$line", RESET;
+            } 
+            else {
+                print $line;
+            }
+        }
+        else {
+            if ($status == 0) {
+                next if (should_skip_line($line));
+
+                if ($line =~ /DEBUGGING_MOCKS/) {
+                    $debugging_mocks = 1;
+                }
+                elsif ($debugging_mocks) {
+                    print $line;
+                }
+                else {
+                    # This is presumably noise?
+                    print RED, "$line\n", RESET;
+                }
+            }
+            else {
+                # Test fail, print everything
+                print $line;
+            }
+        }
+    }
+    if ($status != 0) {
+        print RED, UNDERLINE, "Test failed.\n", RESET;
+    }
+}
+
+
+sub set_ld_library_path {
+    my $path = shift;
+    $ENV{'LD_LIBRARY_PATH'} = $path;
+}
+
+sub run_timed {
+    my ($cmdline) = @_;
+
+    my $start_t = Benchmark->new;
+    my @output = `$cmdline`;
+    my $status = $? >> 8;
+    my $end_t = Benchmark->new;
+
+    my $elapsed_t = timediff($end_t, $start_t);
+
+    return ($status, $elapsed_t, @output);
+}
+
+sub run_test {
+    my ($test) = @_;
+    my $cmdline = "LD_LIBRARY_PATH=$ld_library_path $test 2>&1";
+    my ($status, $elapsed_t, @output) = run_timed($cmdline);
+    print_output(\@output, $status);
+    print BLUE, "Time: ".timestr($elapsed_t)."\n", RESET;
+
+    if ( $status != 0 ) {
+        print RED, "cmdline: $cmdline\n", RESET;
+        if ($completion == 0) {
+            exit $status;
+        }
+        else {
+            $failcount++;
+        }
+    }
+
+    return $status;
+}
+
+GetOptions("help"   => \$help, 
+           "man"    => \$man,
+           "suite:s" => \$suite,
+           "exe:s" => \$exe,
+           "ld-library-path=s" => \$ld_library_path,
+           "tests=s{1,}" => \@tests) or pod2usage(2);
+pod2usage( -verbose => 1 ) if ($help);
+pod2usage( {-exitval => 0, -verbose => 2 } ) if ($man);
+
+if (@ARGV > 0) {
+    pod2usage( { -message => "Unexpected number of parameters!",
+                 -exitval => -1 } );
+}
+if ($ENV{'RUN_TO_COMPLETION'}){
+    $completion = $ENV{'RUN_TO_COMPLETION'};  # Run to completion
+}
+
+
+if ( $exe ) { 
+    my $search = "test_".$exe.".exe";
+    my ($exe_path) = grep (m/$search/, @tests);
+    if ( -x $exe_path ) {
+         my $status = run_test($exe_path);
+         exit $status;
+    }
+    else {
+         print_error_and_exit "No test exe found for '$exe' (".$exe_path."?)\n";
+    } 
+}
+else {
+    print BOLD, UNDERLINE, "\nRunning all 'cgreen' tests...\n", RESET;
+    my $overall_start_t = Benchmark->new;
+    foreach my $test (@tests) {
+        if ( $test !~ m/unit_test.exe/ ) {
+             print BOLD, "\nRunning $test\n", RESET;
+             run_test($test);
+        }
+    }
+    if ($failcount>0) {
+        print RED, "Got $failcount failed tests, but running to completion\n", RESET;
+    }
+    my $overall_end_t = Benchmark->new;
+    my $overall_elapsed_t = timediff($overall_end_t, $overall_start_t);
+    print BLUE, "Overall time: ".timestr($overall_elapsed_t)."\n", RESET;
+} 
+
+__END__
+
+=head1 NAME
+
+run_unit_tests - run all unit tests, tests by type, or individually named tests
+
+=head1 SYNOPSIS
+
+run_unit_tests [options] 
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<help>
+
+Print a brief help message.
+
+=item B<man>
+
+Print a manual page. 
+
+=item B<tests>
+
+Required. The list of test exes from the Makefile and module.mk files.
+
+=item B<ld-library-path>
+
+Required. The LD_LIBRARY_PATH for CGreen tests.
+
+=back
+
+=head1 DESCRIPTION
+
+run_unit_tests - run all unit tests, tests by type, or individually named tests.
+The goal with this script is to keep the complexity out of the Makefile and to
+make it easier to work with conditional logic to provide more useful make
+targets. 
+
+=head1 TEST OUTPUT
+
+An attempt is made to tidy up test output, so that 'noise' is not shown 
+during a successful test run. Assertions from successful tests are not
+shown (presuming that the test has expected that assertion to pass).
+
+
+=head1 ENVIRONMENT VARIABLES
+
+The environment variable ANSI_COLORS_DISABLED can be set to disable all 
+colouredoutput.
+=cut
