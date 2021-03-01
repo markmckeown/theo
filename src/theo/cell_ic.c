@@ -17,11 +17,15 @@ int cell_ic_sanity(struct cell_ic *cell_ic) {
 
 uint32_t cell_ic_on_entry(struct cell_ic *cell_ic) {
 	cell_ic->entry_code++;
+	// Now before proceeding issue a full memory barrier
+	__sync_synchronize();
 	return cell_ic->entry_code;
 }
 
 uint32_t cell_ic_on_exit(struct cell_ic *cell_ic) {
 	cell_ic->exit_code = cell_ic->entry_code;
+	// Now before proceeding issue a full memory barrier
+	__sync_synchronize();
 	return cell_ic->exit_code;
 }
 
