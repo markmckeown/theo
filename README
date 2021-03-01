@@ -1,1 +1,91 @@
 Experiments with DAX
+
+
+WANOpt dedupe cache is a byte cache of network traffic,
+repeated byte patterns can be replaced with a reference
+to a set of bytes offloading bytes from the wire.
+
+The large the dedupe cache the better the performance of
+the WANOpt device, this quickly leads to the case that 
+data has to be paged to and from disk to meet performance
+requirements.
+
+One optimisation is to store an index for fast look up
+separate from the byte storage. Futher to this the byte
+storage can be designed in such a way that consequative 
+cache hits can align to how the bytes are stored together.
+Essentially the byte stream is stored sequentially on disk
+and an index is built that indexes into the byte stream.
+The is an important optimisation for spinning disks and something
+that is still important for SSD (for example OS read ahead
+into the page cache is still effective).
+
+With NVMM (Non-Volatile Main Memory) some of these optimisations
+no longer make sense. NVMM is fast and large (currently 512GB
+DIMMS are available). This removes the need to separate the
+index from the byte storage and it also removes the requirement
+for coallesing the byte stream together.
+
+A difference between a WANOpt dedupe device and a dedupe storage
+solution is that for WANOpt the data is a cache and cache misses
+can be tolerated - for dedupe storage data cannot be lost. This
+means that for WANOpt dedupe aggressive choices can be made about
+losing data, as long as the whole cache does not become corrupted.
+
+Proposed solution is to design a cache based on a fixed size 
+file. The file will be split into equally sized "cells" which
+each cell able to hold some number of chunks. Note chunks can
+be of unequal length. Each chunk will have associated with it
+a SHA-256 checksum. The checksum will be used to index to the 
+cell that should store the chunk -- eg we can mask out the
+top set of bits. So given a SHA-256 there is a linear mapping
+to a cell. It can be imagined there there will be the order
+of millions of cells.
+
+The cell structure will be along the lines of the following:
+a header that holds the meta data about the cell, for example
+the SHA-256 of the chunks it holds and a buffer space for holding
+the actual chunks. The buffer space will be treated as a ring
+buffer -- once the buffer files up we start filling from the start
+of the buffer, this will cover how the cache will GC.
+
+The cell will have to perform the following actions:
+
+* Does the cell contain a chunk with this SHA-256? The
+cell meta data will be interogated.
+
+* Get the chunk with this SHA-256. Consult cell meta data,
+copy bytes into a buffer, check SHA-256 is consistent. Can
+return false.
+
+* Add chunk to cell. Find location in the cell to add bytes
+from cell meta data, write bytes, update cell meta data.
+
+Thread safety can be provided by simple mutex, as there
+are so many cells there should be low conflict and read-write
+locks are more expensive. Note that we have to worry about
+cell integrety - if the system crashes while updating a cell. 
+One solution to this would be to use a Write Ahead File Log,
+WAFL. However, if these scenarios are rare then we can
+handle this more simply if we can detect a cell is corrupt and
+reset it (losing any cached data in the cell). 
+
+Cell integrity -- will be handled by two special int32 in 
+the cell meta data. One will be a counter that will increment
+whenever the cell is updated, and the other will be the bit
+flip of this value. The protocol will be as follows:
+
+mutex lock on cell
+check counter and flipped counter sane 
+  if not sane reset cell.
+increment counter --- cell is now corrupt.
+use memory barrier to flush counter to persistent memory.
+update ring buffer
+update cell meta data
+set fip-counter
+use memory barrier to flush flip-counter to persistent memory -- cell is nolonger corrupt.
+unlock mutex
+
+The CPU can reorder memory write back from the cache to memory, and
+in this case persistent memory. So we need to use memory barriers to
+insure the counter and flip-counter are set into persistent memory.
