@@ -23,8 +23,10 @@ uint32_t cell_ic_on_entry(struct cell_ic *cell_ic) {
 }
 
 uint32_t cell_ic_on_exit(struct cell_ic *cell_ic) {
+	// Flush everything done to memory using full memory barrier.
+	__sync_synchronize();
 	cell_ic->exit_code = cell_ic->entry_code;
-	// Now before proceeding issue a full memory barrier
+	// Make sure exit_code is flushed to memory.
 	__sync_synchronize();
 	return cell_ic->exit_code;
 }
