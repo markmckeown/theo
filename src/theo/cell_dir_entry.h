@@ -1,7 +1,6 @@
 #ifndef CELL_DIR_ENTRY_H
 #define CELL_DIR_ENTRY_H
 
-
 #include "theo/checksum.h" 
 
 // Reference for a chunk in the cell.
