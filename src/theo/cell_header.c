@@ -3,10 +3,11 @@
 #include "theo/cell_header.h"
 
 
-void cell_header_init(struct cell_header *cell_header, char* buffer_start, uint32_t buffer_size) {
+void cell_header_init(struct cell_header *cell_header, uint32_t buffer_size) {
 	memset(cell_header, 0, sizeof(struct cell_header));
 	cell_ic_init(&cell_header->cell_ic);
-	cell_dir_init(&cell_header->cell_dir, buffer_start, buffer_size);
+	cell_dir_init(&cell_header->cell_dir);
+	cell_header->buffer_size = buffer_size;
 	return;
 }
 

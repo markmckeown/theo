@@ -89,3 +89,6 @@ unlock mutex
 The CPU can reorder memory write back from the cache to memory, and
 in this case persistent memory. So we need to use memory barriers to
 insure the counter and flip-counter are set into persistent memory.
+
+
+LD_LIBRARY_PATH=:generated/lib/x86_64-linux-gnu:generated/lib:generated/debug/lib cgdb --args generated/debug/cgreen/test_cell_dir_block.exe test_cell_dir_block_remove

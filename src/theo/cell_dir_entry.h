@@ -15,4 +15,6 @@ struct cell_dir_entry {
 
 void cell_dir_entry_init(struct cell_dir_entry *cell_dir_entry);
 
+void cell_dir_entry_copy(struct cell_dir_entry *to, struct cell_dir_entry *from);
+
 #endif

@@ -8,15 +8,8 @@
 
 Ensure(test_cell_dir_init)
 {
-	char buffer[1024];
 	struct cell_dir cell_dir;
-	cell_dir_init(&cell_dir, buffer, 1024);
-	assert_equal(cell_dir.buffer_start, buffer);
-	assert_equal(cell_dir.hole_start, buffer);
-	assert_equal(cell_dir.hole_size, 1024);
-	assert_equal(cell_dir.buffer_size, 1024);
-	assert_equal(cell_dir.next_slot, 0);
-	assert_equal(cell_dir.cell_entries_count, 0);
+	cell_dir_init(&cell_dir);
 }
 
 

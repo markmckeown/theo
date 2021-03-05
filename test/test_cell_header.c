@@ -8,9 +8,8 @@
 
 Ensure(test_cell_header_init)
 {
-	char buffer[1024];
 	struct cell_header cell_header;
-	cell_header_init(&cell_header, buffer, 1024);
+	cell_header_init(&cell_header, 1024);
 	assert_equal(cell_header_sanity(&cell_header), 0);	
 }
 
