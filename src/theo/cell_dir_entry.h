@@ -10,7 +10,7 @@ struct cell_dir_entry {
 	// offset into the cell for the data.
 	uint32_t offset;
 	// size of the chunk
-	uint32_t size;
+	uint16_t size;
 };
 
 void cell_dir_entry_init(struct cell_dir_entry *cell_dir_entry);
