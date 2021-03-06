@@ -13,3 +13,14 @@ void cell_dir_entry_copy(struct cell_dir_entry *to, struct cell_dir_entry *from)
 	memcpy(to, from, sizeof(struct cell_dir_entry));
 	return;
 }
+
+
+void cell_dir_entry_set(struct cell_dir_entry *cell_dir_entry, 
+			struct checksum *checksum,
+			uint32_t chunk_size,
+			uint32_t offset) {
+	memcpy(&cell_dir_entry->checksum, checksum, sizeof(struct checksum));
+	cell_dir_entry->size = chunk_size;
+	cell_dir_entry->offset = offset;
+	return;
+}

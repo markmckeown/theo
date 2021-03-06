@@ -6,10 +6,12 @@
 
 #include "theo/cell_dir_block.h"
 #include "theo/cell_dir_entry.h"
+#include "theo/cell_dir_overflow.h"
 
 // Will hold some number of chunk references.
 struct cell_dir {
 	struct cell_dir_block blocks[CELL_DIR_BLOCK_COUNT];
+	struct cell_dir_overflow overflow;
 };
 
 void cell_dir_init(struct cell_dir *cell_dir);

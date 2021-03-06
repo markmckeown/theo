@@ -10,8 +10,8 @@
 // Will hold some number of chunk references.
 struct cell_dir_block {
 	struct cell_dir_entry entries[CELL_DIR_BLOCK_ENTRIES];
-	uint16_t entry_count :3;
-	uint16_t overflow_count :13;
+	uint16_t entry_count :4;        // Max 16 entries
+	uint16_t overflow_count :12;    // This block can overflow by 4096
 };
 
 void cell_dir_block_init(struct cell_dir_block *cell_dir_block);
@@ -29,5 +29,11 @@ bool cell_dir_block_has_chunk(struct cell_dir_block *cell_dir_block,
 	  		     struct cell_dir_entry *cell_dir_entry);
 
 bool cell_dir_block_full(struct cell_dir_block *cell_dir_block);
+
+bool cell_dir_block_overflowed(struct cell_dir_block *cell_dir_block);
+
+uint32_t cell_dir_block_increment_overflow(struct cell_dir_block *cell_dir_block);
+
+uint32_t cell_dir_block_decrement_overflow(struct cell_dir_block *cell_dir_block);
 
 #endif

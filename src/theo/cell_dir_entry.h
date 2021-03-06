@@ -17,4 +17,9 @@ void cell_dir_entry_init(struct cell_dir_entry *cell_dir_entry);
 
 void cell_dir_entry_copy(struct cell_dir_entry *to, struct cell_dir_entry *from);
 
+void cell_dir_entry_set(struct cell_dir_entry *cell_dir_entry, 
+			struct checksum *checksum,
+			uint32_t chunk_size,
+			uint32_t offset);
+
 #endif
