@@ -15,7 +15,7 @@ struct cell_dir_overflow {
 void cell_dir_overflow_init(struct cell_dir_overflow *cell_dir_overflow);
 
 uint32_t cell_dir_overflow_add(struct cell_dir_overflow *cell_dir_overflow, char *buffer_top,
-		struct checksum *checksum, uint32_t chunk_size, uint32_t offset);
+		struct cell_dir_entry *cell_dir_entry);
 
 bool cell_dir_overflow_remove(struct cell_dir_overflow *cell_dir_overflow, char *buffer_top,
 		struct checksum *checksum);

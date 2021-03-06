@@ -9,14 +9,14 @@ void cell_dir_overflow_init(struct cell_dir_overflow *cell_dir_overflow) {
 }
 
 uint32_t cell_dir_overflow_add(struct cell_dir_overflow *cell_dir_overflow, char *buffer_top,
-                struct checksum *checksum, uint32_t chunk_size, uint32_t offset) {
+                struct cell_dir_entry *cell_dir_entry) {
 	char* entry;
-	struct cell_dir_entry *cell_dir_entry;
+	struct cell_dir_entry *ptr;
 	       
 	cell_dir_overflow->overflow_count++;
 	entry = buffer_top - (cell_dir_overflow->overflow_count * sizeof(struct cell_dir_entry));
-	cell_dir_entry = (struct cell_dir_entry*) entry;
-	cell_dir_entry_set(cell_dir_entry, checksum, chunk_size, offset);
+	ptr = (struct cell_dir_entry*) entry;
+	cell_dir_entry_copy(ptr, cell_dir_entry);
 	return cell_dir_overflow->overflow_count;
 }
 

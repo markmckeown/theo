@@ -14,14 +14,32 @@ void cell_dir_init(struct cell_dir *cell_dir) {
 }
 
 
-void cell_dir_add(struct cell_dir *cell_dir, struct checksum *checksum, uint32_t chunk_size, uint32_t offset) {
-	uint32_t block_no = checksum->bytes[CELL_DIR_BLOCK_CHECKSUM_BYTE];
-	ALWAYS(cell_dir_block_full(&cell_dir->blocks[block_no]) != 0);
-	cell_dir_block_add(&cell_dir->blocks[block_no], checksum, chunk_size, offset);
+void cell_dir_add(struct cell_dir *cell_dir, 
+		char* buffer_top,
+		struct cell_dir_entry *cell_dir_entry) {
+	uint8_t block_no = cell_dir_entry->checksum.bytes[CELL_DIR_BLOCK_CHECKSUM_BYTE];
+	if (!cell_dir_block_add(&cell_dir->blocks[block_no], cell_dir_entry)) {
+		cell_dir_overflow_add(&cell_dir->overflow, buffer_top, cell_dir_entry);
+		cell_dir_block_increment_overflow(&cell_dir->blocks[block_no]);	
+	}
 	return;
 }
 
-bool cell_dir_has_chunk(struct cell_dir *cell_dir, struct checksum *checksum, struct cell_dir_entry *cell_dir_entry) {
-	uint32_t block_no = checksum->bytes[CELL_DIR_BLOCK_CHECKSUM_BYTE];
-	return cell_dir_block_has_chunk(&cell_dir->blocks[block_no], checksum, cell_dir_entry);
+bool cell_dir_get_chunk(struct cell_dir *cell_dir, 
+		char *buffer_top, 
+		struct checksum *checksum, 
+		struct cell_dir_entry *cell_dir_entry) {
+	bool ret = false;
+	uint8_t block_no = checksum->bytes[CELL_DIR_BLOCK_CHECKSUM_BYTE];
+
+	if (cell_dir_block_get_chunk(&cell_dir->blocks[block_no], checksum, cell_dir_entry)) {
+		ret = true;
+		goto out;
+	}
+
+	if (cell_dir_block_overflowed(&cell_dir->blocks[block_no])) {
+		ret = cell_dir_overflow_get_chunk(&cell_dir->overflow, buffer_top, checksum, cell_dir_entry); 
+	}
+out:	
+	return ret;	
 }
