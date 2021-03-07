@@ -11,23 +11,18 @@ void cell_dir_block_init(struct cell_dir_block *cell_dir_block) {
 
 bool cell_dir_block_add(struct cell_dir_block *cell_dir_block, 
 		        struct cell_dir_entry *cell_dir_entry) {
-	bool ret = true;
+	bool ret = false;
 	int i = 0;
-
-	if (cell_dir_block->entry_count == CELL_DIR_BLOCK_ENTRIES) {
-		ret = false;
-		goto out;
-	}
 
 	for (i = 0; i < CELL_DIR_BLOCK_ENTRIES; i++) {
 		if (cell_dir_block->entries[i].size == 0) {
 			cell_dir_entry_copy(&cell_dir_block->entries[i], cell_dir_entry);
 			cell_dir_block->entry_count++;
+			ret = true;
 			break;
 		}
 	}
 
-out:
 	return ret;	
 }
 
@@ -90,10 +85,12 @@ bool cell_dir_block_overflowed(struct cell_dir_block *cell_dir_block) {
 }
 
 uint32_t cell_dir_block_increment_overflow(struct cell_dir_block *cell_dir_block) {
-	return cell_dir_block->overflow_count++;
+	cell_dir_block->overflow_count++;
+	return cell_dir_block->overflow_count;
 }
 
 uint32_t cell_dir_block_decrement_overflow(struct cell_dir_block *cell_dir_block) {
 	ALWAYS(cell_dir_block->overflow_count > 0);
-	return cell_dir_block->overflow_count--;
+	cell_dir_block->overflow_count--;
+	return cell_dir_block->overflow_count;
 }       

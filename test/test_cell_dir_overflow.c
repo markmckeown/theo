@@ -115,6 +115,7 @@ Ensure(test_cell_dir_overflow_remove)
 				&checksum), true);
         assert_equal(cell_dir_overflow.overflow_count, 1);
 
+	// Remove entry that does not exist
 	checksum.bytes[0] = 99;
 	assert_equal(cell_dir_overflow_remove(&cell_dir_overflow, buffer + ONE_MB,
 				&checksum), false);
@@ -123,6 +124,12 @@ Ensure(test_cell_dir_overflow_remove)
 	checksum.bytes[0] = 3;
 	assert_equal(cell_dir_overflow_remove(&cell_dir_overflow, buffer + ONE_MB,
 				&checksum), true);
+        assert_equal(cell_dir_overflow.overflow_count, 0);
+
+	// Remove from empty overflow.
+	checksum.bytes[0] = 99;
+        assert_equal(cell_dir_overflow_remove(&cell_dir_overflow, buffer + ONE_MB,
+                                &checksum), false);
         assert_equal(cell_dir_overflow.overflow_count, 0);
 
 	checksum.bytes[0] = 3;

@@ -17,16 +17,6 @@ void *xmalloc(size_t size)
 	return ptr;
 }
 
-void *xrealloc(void *ptr, size_t size)
-{
-	void *new_ptr = 0;
-
-	new_ptr = realloc(ptr, size);
-	ALWAYS(new_ptr);
-
-	return new_ptr;
-}
-
 void xfree(void *ptr)
 {
 	ALWAYS(ptr);
