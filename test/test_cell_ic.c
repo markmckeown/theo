@@ -9,7 +9,7 @@ Ensure(test_cell_ic_sanity) {
 	cell_ic_init(&cell_ic);
 	assert_equal(cell_ic.exit_code, 0);
 	assert_equal(cell_ic.entry_code, 0);
-	assert_equal(cell_ic_sanity(&cell_ic), 0);
+	assert_equal(cell_ic_sane(&cell_ic), true);
 }
 
 
@@ -22,12 +22,12 @@ Ensure(test_cell_ic_setting) {
 	cell_ic_init(&cell_ic);
 	assert_equal(cell_ic.exit_code, 0);
 	assert_equal(cell_ic.entry_code, 0);
-	assert_equal(cell_ic_sanity(&cell_ic), 0);
+	assert_equal(cell_ic_sane(&cell_ic), true);
 
 	assert_equal(cell_ic_on_entry(&cell_ic), 1);
-	assert_equal(cell_ic_sanity(&cell_ic), -1);
+	assert_equal(cell_ic_sane(&cell_ic), false);
 	assert_equal(cell_ic_on_exit(&cell_ic), 1);
-	assert_equal(cell_ic_sanity(&cell_ic), 0);
+	assert_equal(cell_ic_sane(&cell_ic), true);
 
 }
 

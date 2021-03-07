@@ -8,11 +8,8 @@ void cell_ic_init(struct cell_ic *cell_ic) {
 	return;
 }
 
-int cell_ic_sanity(struct cell_ic *cell_ic) {
-	if (cell_ic->entry_code != cell_ic->exit_code) {
-		return -1;
-	}
-	return 0;
+bool  cell_ic_sane(struct cell_ic *cell_ic) {
+	return  (cell_ic->entry_code == cell_ic->exit_code);
 }
 
 uint32_t cell_ic_on_entry(struct cell_ic *cell_ic) {

@@ -9,8 +9,8 @@
 Ensure(test_cell_header_init)
 {
 	struct cell_header cell_header;
-	cell_header_init(&cell_header, 1024);
-	assert_equal(cell_header_sanity(&cell_header), 0);	
+	cell_header_init(&cell_header);
+	assert_equal(cell_header_sane(&cell_header), true);	
 }
 
 
