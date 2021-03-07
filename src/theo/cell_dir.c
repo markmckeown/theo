@@ -25,6 +25,31 @@ void cell_dir_add(struct cell_dir *cell_dir,
 	return;
 }
 
+
+bool cell_dir_remove(struct cell_dir *cell_dir,
+                char* buffer_top,
+                struct checksum *checksum) {
+	bool ret = false;
+	uint8_t block_no = checksum->bytes[CELL_DIR_BLOCK_CHECKSUM_BYTE];
+
+	if (cell_dir_block_remove(&cell_dir->blocks[block_no], checksum)) {
+		ret = true;
+		goto out;
+	}
+
+	
+	if (cell_dir_block_overflowed(&cell_dir->blocks[block_no])) {
+		if (cell_dir_overflow_remove(&cell_dir->overflow, buffer_top, checksum)) {
+			cell_dir_block_decrement_overflow(&cell_dir->blocks[block_no]);
+			ret = true;
+		}
+		
+	}
+out:
+	return ret;	
+}
+
+
 bool cell_dir_get_chunk(struct cell_dir *cell_dir, 
 		char *buffer_top, 
 		struct checksum *checksum, 

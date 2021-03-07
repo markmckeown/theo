@@ -20,6 +20,10 @@ void cell_dir_add(struct cell_dir *cell_dir,
 		char* buffer_top,
 		struct cell_dir_entry *cell_dir_entry);
 
+bool cell_dir_remove(struct cell_dir *cell_dir,
+		char* buffer_top,
+		struct checksum *checksum);
+
 bool cell_dir_get_chunk(struct cell_dir *cell_dir, 
 		char* buffer_top, 
 		struct checksum *checksum, 
