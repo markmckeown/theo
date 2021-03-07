@@ -23,7 +23,6 @@ uint32_t cell_dir_overflow_add(struct cell_dir_overflow *cell_dir_overflow, char
 
 bool cell_dir_overflow_remove(struct cell_dir_overflow *cell_dir_overflow, char *buffer_top,
 		struct checksum *checksum){
-	ALWAYS(cell_dir_overflow->overflow_count > 0);
 	bool ret = false;
 	char* entry;
 	struct cell_dir_entry *cell_dir_entry, *ptr;
