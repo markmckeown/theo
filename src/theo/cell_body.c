@@ -70,7 +70,8 @@ bool cell_body_add_top(struct cell_body *cell_body,
 	}
 	
 	// Find cell_body_entry
-	cell_body_entry = (struct cell_body_entry *)  cell->slab + cell_body->top_entry_offset;
+	ptr  = cell->slab + cell_body->top_entry_offset;
+	cell_body_entry = (struct cell_body_entry *) ptr;
 	
 	// No longer top or free
 	cell_body_entry->free_space = 0;
@@ -79,8 +80,7 @@ bool cell_body_add_top(struct cell_body *cell_body,
 	// Set buffer size and copy in checksum and buffer
 	cell_body_entry->size = buffer_size;
 	memcpy(&cell_body_entry->checksum, checksum, sizeof(struct checksum));
-	ptr = (char *) cell_body_entry;
-        ptr = ptr + sizeof(struct cell_body_entry);
+        ptr += sizeof(struct cell_body_entry);
 	memcpy(ptr, buffer, buffer_size);	
 	
 	// Add to cell_dir
@@ -89,7 +89,8 @@ bool cell_body_add_top(struct cell_body *cell_body,
 		   cell_dir_entry);
 
 	// Add a new cell top entry
-	cell_body_entry = (struct cell_body_entry *) (ptr + buffer_size);
+	ptr += buffer_size;
+	cell_body_entry = (struct cell_body_entry *) ptr;
 	cell_body_entry->free_space = 1;
 	cell_body_entry->top_entry = 1;
 	cell_body_entry->previous_size = buffer_size;
@@ -156,20 +157,31 @@ void cell_body_add_offset(struct cell_body *cell_body,
 	struct cell_body_entry *cell_body_entry, *cell_body_entry_ptr;
 	char *ptr;
 
-	required_space = buffer_size + sizeof(struct cell_body_entry);
-	cell_body_entry = (struct cell_body_entry *) (cell->slab + cell_body->next_entry_offset);
 	ptr = cell->slab + cell_body->next_entry_offset;
+	cell_body_entry = (struct cell_body_entry *) ptr;
 
 	if (!cell_body_entry_free(cell_body_entry)) {
 		cell_dir_remove(&cell->cell_header->cell_dir, cell->slab - sizeof(struct cell_header), 
 				&cell_body_entry->checksum);
-		cell_body_entry->free_space = 1;
+	}
+
+	if (cell_body_entry->size == buffer_size) {
+		// entry matches required size, just need to update the entry and
+		// reset next_entry_offset
+		cell_body_write_chunk(cell_body_entry, checksum, buffer, buffer_size);
+		memcpy(&cell_dir_entry->checksum, checksum, sizeof(struct checksum));
+		cell_dir_entry->offset = cell_body->next_entry_offset;
+		cell_dir_entry->size = buffer_size;
+		cell_body_add_dir_entry(cell, cell_body, cell_dir_entry);
+		cell_body->next_entry_offset += (sizeof(struct cell_body_entry) + buffer_size);
+		goto out;
 	}
 
 	cell_body_entry_ptr = cell_body_entry;
 	free_space = cell_body_entry->size;
+	required_space = buffer_size + sizeof(struct cell_body_entry);
 	while (free_space < required_space) {
-		ptr += cell_body_entry_ptr->size + sizeof(cell_body_entry);
+		ptr += cell_body_entry_ptr->size + sizeof(struct cell_body_entry);
 		cell_body_entry_ptr = (struct cell_body_entry *) ptr;
 		if (cell_body_entry_top(cell_body_entry_ptr)) {
 			// Hit the top --- reset the cell_body_entry so that it is now the top
@@ -183,7 +195,7 @@ void cell_body_add_offset(struct cell_body *cell_body,
 			cell_dir_remove(&cell->cell_header->cell_dir, cell->slab - sizeof(struct cell_header),
                                 &cell_body_entry_ptr->checksum);
 		}
-		free_space += cell_body_entry_ptr->size + sizeof(cell_body_entry);
+		free_space += cell_body_entry_ptr->size + sizeof(struct cell_body_entry);
 	}
 
 	cell_body_write_chunk(cell_body_entry, checksum, buffer, buffer_size);
@@ -194,13 +206,18 @@ void cell_body_add_offset(struct cell_body *cell_body,
 
 	// Need fix the any free space up with a cell_body_entry
 	free_space -= required_space;
-	cell_body->next_entry_offset += required_space;
-	cell_body_entry_ptr = (struct cell_body_entry *) (cell->slab + cell_body->next_entry_offset);
+	cell_body->next_entry_offset += sizeof(struct cell_body_entry) + buffer_size;
+	ptr = cell->slab + cell_body->next_entry_offset;
+	cell_body_entry_ptr = (struct cell_body_entry *) ptr;
 	cell_body_entry_init(cell_body_entry_ptr);
 	cell_body_entry_ptr->previous_size = buffer_size;
 	cell_body_entry_ptr->size = free_space;
 	cell_body_entry_ptr->free_space = 1;
 	cell_body_entry_ptr->top_entry = 0;
+	// Fix back pointer of next entry
+	ptr += sizeof(struct cell_body_entry) + free_space;
+	cell_body_entry_ptr = (struct cell_body_entry *) ptr;
+	cell_body_entry_ptr->previous_size = free_space;
 
 out:
 	return;
@@ -213,9 +230,11 @@ void cell_body_add(struct cell_body *cell_body,
 		char *buffer,
 		uint32_t buffer_size,
 		struct cell_dir_entry *cell_dir_entry) {
+	char *ptr;
 	struct cell_body_entry *next_cell_body_entry;
-
-	next_cell_body_entry = (struct cell_body_entry *) (cell->slab + cell_body->next_entry_offset);
+	
+	ptr = cell->slab + cell_body->next_entry_offset;
+	next_cell_body_entry = (struct cell_body_entry *) ptr;
 	if (cell_body_entry_top(next_cell_body_entry)) {
 		if (cell_body_add_top(cell_body, cell, checksum, buffer, buffer_size, cell_dir_entry)) {
 			goto out;
