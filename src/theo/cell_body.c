@@ -60,6 +60,7 @@ bool cell_body_add_top(struct cell_body *cell_body,
 
 	// Need room for buffer, new cell_body_entry for the new top and perhaps a new
 	// cell_dir_entry if the cell_dir has overflowed.
+	// If we use the top we need to add another cell_body_entry.
 	required_space = buffer_size + sizeof(struct cell_body_entry) + sizeof(struct cell_dir_entry);
 	free_space = cell_body_free_space(cell_body, cell);
 
@@ -129,15 +130,14 @@ void cell_body_add_dir_entry(struct cell *cell,
 	}
 	cell_body_entry->free_space = 1;
 	cell_body_entry->top_entry = 1;
+	cell_body_entry->size = 0;
+
 	if (cell_body->top_entry_offset == cell_body->next_entry_offset) {
 		// Before we pushed top down it was the next_entry_offset so
 		// need to reset next_entry_offset
-		cell_body->top_entry_offset = offset;
 		cell_body->next_entry_offset = offset;
-	} else {
-		// next_entry_offset did not point at top, so no need to change it.
-		cell_body->top_entry_offset = offset;
 	}
+	cell_body->top_entry_offset = offset;
 	cell_dir_add(&cell->cell_header->cell_dir, (char *) cell->cell_header,
 		   cell_dir_entry);
 
@@ -187,6 +187,7 @@ void cell_body_add_offset(struct cell_body *cell_body,
 			// Hit the top --- reset the cell_body_entry so that it is now the top
 			// and pass over to be handled cell_body_add_top
 			cell_body_entry->top_entry = 1;
+			cell_body->top_entry_offset = cell_body->next_entry_offset;
 			cell_body_add_top(cell_body, cell, checksum, buffer, buffer_size, cell_dir_entry);
 			goto out;
 		}

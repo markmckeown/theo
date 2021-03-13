@@ -29,8 +29,9 @@ out:
 }
 
 uint32_t cell_header_bytes_used(struct cell_header *cell_header) {
-	uint32_t header_size = sizeof(struct cell_header);
-	header_size += cell_header->cell_dir.overflow.overflow_count * sizeof(struct cell_dir_entry);
+	uint32_t header_size;
+	header_size = sizeof(struct cell_header) +
+	      	cell_header->cell_dir.overflow.overflow_count * sizeof(struct cell_dir_entry);
 	return header_size;
 }
 
