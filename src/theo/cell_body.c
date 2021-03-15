@@ -93,7 +93,7 @@ bool cell_body_add_top(struct cell_body *cell_body,
 	memcpy(ptr, buffer, buffer_size);	
 	
 	// Add to cell_dir
-	cell_dir_entry_set(cell_dir_entry, checksum, buffer_size, cell_body->top_entry_offset);
+	cell_dir_entry_set(cell_dir_entry, checksum, cell_body->top_entry_offset);
 	cell_dir_add(&cell->cell_header->cell_dir, (char *) cell->cell_header,
 		   cell_dir_entry);
 
@@ -176,9 +176,7 @@ void cell_body_add_offset(struct cell_body *cell_body,
 		// entry matches required size, just need to update the entry and
 		// reset next_entry_offset
 		cell_body_write_chunk(cell_body_entry, checksum, buffer, buffer_size);
-		memcpy(&cell_dir_entry->checksum, checksum, sizeof(struct checksum));
-		cell_dir_entry->offset = cell_body->next_entry_offset;
-		cell_dir_entry->size = buffer_size;
+		cell_dir_entry_set(cell_dir_entry, checksum, cell_body->next_entry_offset);
 		cell_body_add_dir_entry(cell, cell_body, cell_dir_entry);
 		cell_body->next_entry_offset += (sizeof(struct cell_body_entry) + buffer_size);
 		goto out;
@@ -220,8 +218,7 @@ void cell_body_add_offset(struct cell_body *cell_body,
 
 	cell_body_write_chunk(cell_body_entry, checksum, buffer, buffer_size);
 	memcpy(&cell_dir_entry->checksum, checksum, sizeof(struct checksum));
-	cell_dir_entry->offset = cell_body->next_entry_offset;
-	cell_dir_entry->size = buffer_size;
+	cell_dir_entry_set(cell_dir_entry, checksum, cell_body->next_entry_offset);
 	cell_body_add_dir_entry(cell, cell_body, cell_dir_entry);
 
 	// Need fix the any free space up with a cell_body_entry

@@ -19,7 +19,7 @@ Ensure(test_cell_dir_block_add) {
 	checksum_init(&checksum);
 	checksum.bytes[1] = 1;
 
-	cell_dir_entry_set(&in ,&checksum, 34, 26);
+	cell_dir_entry_set(&in ,&checksum, 26);
 	cell_dir_block_add(&cell_dir_block, &in);
 	assert_equal(cell_dir_block_full(&cell_dir_block), false);
 }
@@ -34,13 +34,13 @@ Ensure(test_cell_dir_block_add2) {
         checksum_init(&checksum);
         checksum.bytes[1] = 1;
 
-	cell_dir_entry_set(&in, &checksum, 34, 26);
+	cell_dir_entry_set(&in, &checksum,  26);
         cell_dir_block_add(&cell_dir_block, &in);
         assert_equal(cell_dir_block_full(&cell_dir_block), false);
 
         checksum.bytes[1] = 2;
 
-	cell_dir_entry_set(&in, &checksum, 74, 56);
+	cell_dir_entry_set(&in, &checksum,  56);
 	cell_dir_block_add(&cell_dir_block, &in);
         assert_equal(cell_dir_block_full(&cell_dir_block), false);
 }
@@ -54,26 +54,26 @@ Ensure(test_cell_dir_block_full) {
         
 	checksum_init(&checksum);
         checksum.bytes[1] = 1;
-	cell_dir_entry_set(&in, &checksum, 34, 26);
+	cell_dir_entry_set(&in, &checksum, 26);
         assert_equal(cell_dir_block_add(&cell_dir_block, &in), true);
         assert_equal(cell_dir_block_full(&cell_dir_block), false);
 
         checksum_init(&checksum);
         checksum.bytes[1] = 2;
-	cell_dir_entry_set(&in, &checksum, 74, 56);
+	cell_dir_entry_set(&in, &checksum, 56);
         assert_equal(cell_dir_block_add(&cell_dir_block, &in), true);
         assert_equal(cell_dir_block_full(&cell_dir_block), false);
 
         checksum_init(&checksum);
         checksum.bytes[1] = 3;
-	cell_dir_entry_set(&in, &checksum, 74, 56);
+	cell_dir_entry_set(&in, &checksum, 56);
         assert_equal(cell_dir_block_add(&cell_dir_block, &in), true);
         assert_equal(cell_dir_block_full(&cell_dir_block), true);
 
 	// Add to full block
         checksum_init(&checksum);
         checksum.bytes[1] = 4;
-	cell_dir_entry_set(&in, &checksum, 78, 96);
+	cell_dir_entry_set(&in, &checksum, 96);
         assert_equal(cell_dir_block_add(&cell_dir_block, &in), false);
         assert_equal(cell_dir_block_full(&cell_dir_block), true);
 }
@@ -91,17 +91,17 @@ Ensure(test_cell_dir_block_remove) {
         checksum.bytes[1] = 1;
 	assert_equal(cell_dir_block_get_chunk(&cell_dir_block, &checksum, &cell_dir_entry), false);
 
-	cell_dir_entry_set(&in, &checksum, 34, 26);
+	cell_dir_entry_set(&in, &checksum, 26);
         cell_dir_block_add(&cell_dir_block, &in);
         assert_equal(cell_dir_block_full(&cell_dir_block), false);
 
         checksum.bytes[1] = 2;
-	cell_dir_entry_set(&in, &checksum, 74, 56);
+	cell_dir_entry_set(&in, &checksum, 56);
 	cell_dir_block_add(&cell_dir_block, &in);
         assert_equal(cell_dir_block_full(&cell_dir_block), false);
 
 	checksum.bytes[1] = 3;
-	cell_dir_entry_set(&in, &checksum, 74, 56);
+	cell_dir_entry_set(&in, &checksum, 56);
 	cell_dir_block_add(&cell_dir_block, &in);
 	assert_equal(cell_dir_block_full(&cell_dir_block), true);
 

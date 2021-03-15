@@ -15,7 +15,7 @@ bool cell_dir_block_add(struct cell_dir_block *cell_dir_block,
 	int i = 0;
 
 	for (i = 0; i < CELL_DIR_BLOCK_ENTRIES; i++) {
-		if (cell_dir_block->entries[i].size == 0) {
+		if (cell_dir_block->entries[i].set == 0) {
 			cell_dir_entry_copy(&cell_dir_block->entries[i], cell_dir_entry);
 			cell_dir_block->entry_count++;
 			ret = true;
@@ -35,7 +35,7 @@ bool cell_dir_block_remove(struct cell_dir_block *cell_dir_block,
 	}
 
 	for (i = 0; i < CELL_DIR_BLOCK_ENTRIES; i++) {
-		if (cell_dir_block->entries[i].size == 0) {
+		if (cell_dir_block->entries[i].set == 0) {
 			continue;
 		}
 		if (checksum_compare(checksum, &cell_dir_block->entries[i].checksum) == 0) {
@@ -65,7 +65,7 @@ bool cell_dir_block_get_chunk(struct cell_dir_block *cell_dir_block,
 	}
 
 	for (i = 0; i < CELL_DIR_BLOCK_ENTRIES; i++) {
-		if (cell_dir_block->entries[i].size == 0) {
+		if (cell_dir_block->entries[i].set == 0) {
 			continue;
 		}
 		if (checksum_compare(checksum, &cell_dir_block->entries[i].checksum) == 0) {

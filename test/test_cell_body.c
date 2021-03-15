@@ -67,7 +67,6 @@ Ensure(test_cell_body_add_entry)
 			string, strlen(string), &out);
 	assert_equal(out.checksum.bytes[3], 23);
 	assert_equal(out.offset, 0);
-	assert_equal(out.size, strlen(string));
 	assert_equal(cell_body_entry->free_space, 0);
 	assert_equal(cell_body_entry->top_entry, 0);
 	assert_equal(cell_body_entry->checksum.bytes[3], 23);
@@ -83,7 +82,6 @@ Ensure(test_cell_body_add_entry)
 				(char *) cell.cell_header, &checksum, &out), true);
 	assert_equal(out.checksum.bytes[3], 23);
 	assert_equal(out.offset, 0);
-	assert_equal(out.size, strlen(string));
 				
 
 	xfree(buffer);
@@ -119,7 +117,6 @@ Ensure(test_cell_body_add_entries)
 			string, strlen(string), &out);
 	assert_equal(out.checksum.bytes[17], 23);
 	assert_equal(out.offset, 0);
-	assert_equal(out.size, strlen(string));
 	assert_equal(cell_body_entry->free_space, 0);
 	assert_equal(cell_body_entry->top_entry, 0);
 	assert_equal(cell_body_entry->checksum.bytes[17], 23);
@@ -135,7 +132,6 @@ Ensure(test_cell_body_add_entries)
 				(char *) cell.cell_header, &checksum, &out), true);
 	assert_equal(out.checksum.bytes[17], 23);
 	assert_equal(out.offset, 0);
-	assert_equal(out.size, strlen(string));
 				
 	checksum_init(&checksum);
 	cell_dir_entry_init(&out);
@@ -144,13 +140,11 @@ Ensure(test_cell_body_add_entries)
 			another_string, strlen(another_string), &out);
 	assert_equal(out.checksum.bytes[17], 33);
 	assert_equal(out.offset, sizeof(struct cell_body_entry) + strlen(string));
-	assert_equal(out.size, strlen(another_string));
 	cell_dir_entry_init(&out);
 	assert_equal(cell_dir_get_chunk(&cell.cell_header->cell_dir, 
 				(char *) cell.cell_header, &checksum, &out), true);
 	assert_equal(out.checksum.bytes[17], 33);
 	assert_equal(out.offset, sizeof(struct cell_body_entry) + strlen(string));
-	assert_equal(out.size, strlen(another_string));
 
 	assert_equal (cell.cell_header->cell_body.next_entry_offset, 
 			2 * sizeof(struct cell_body_entry) + strlen(another_string) + strlen(string));
@@ -190,7 +184,6 @@ Ensure(test_cell_body_add_entries_offset)
 			string, 124, &out);
 	assert_equal(out.checksum.bytes[17], 23);
 	assert_equal(out.offset, 0);
-	assert_equal(out.size, 124);
 	assert_equal(cell_body_entry->free_space, 0);
 	assert_equal(cell_body_entry->top_entry, 0);
 	assert_equal(cell_body_entry->checksum.bytes[17], 23);
@@ -206,7 +199,6 @@ Ensure(test_cell_body_add_entries_offset)
 				(char *) cell.cell_header, &checksum, &out), true);
 	assert_equal(out.checksum.bytes[17], 23);
 	assert_equal(out.offset, 0);
-	assert_equal(out.size, 124);
 				
 	checksum_init(&checksum);
 	cell_dir_entry_init(&out);
@@ -215,13 +207,11 @@ Ensure(test_cell_body_add_entries_offset)
 			another_string, strlen(another_string), &out);
 	assert_equal(out.checksum.bytes[17], 33);
 	assert_equal(out.offset, sizeof(struct cell_body_entry) + 124);
-	assert_equal(out.size, strlen(another_string));
 	cell_dir_entry_init(&out);
 	assert_equal(cell_dir_get_chunk(&cell.cell_header->cell_dir, 
 				(char *) cell.cell_header, &checksum, &out), true);
 	assert_equal(out.checksum.bytes[17], 33);
 	assert_equal(out.offset, sizeof(struct cell_body_entry) + 124);
-	assert_equal(out.size, strlen(another_string));
 
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			2 * sizeof(struct cell_body_entry) + strlen(another_string) + 124);
@@ -238,7 +228,6 @@ Ensure(test_cell_body_add_entries_offset)
 			third_string, strlen(third_string), &out);
 	assert_equal(out.checksum.bytes[17], 73);
 	assert_equal(out.offset, 0);
-	assert_equal(out.size, strlen(third_string));
 	
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			sizeof(struct cell_body_entry) + strlen(third_string));
@@ -278,7 +267,6 @@ Ensure(test_cell_body_add_entries_offset_overflow)
 		cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 			string, 10, &out);
 		assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-		assert_equal(out.size, 10);
 		assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			(i + 1) * (sizeof(struct cell_body_entry) + 10));
 		assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -292,7 +280,6 @@ Ensure(test_cell_body_add_entries_offset_overflow)
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 			larger_string, 15, &out);
 	assert_equal(out.offset, (sizeof(struct cell_body_entry) + 10));
-	assert_equal(out.size, 15);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			 (sizeof(struct cell_body_entry) + 10) + 
 			 (sizeof(struct cell_body_entry) + 15));
@@ -308,7 +295,6 @@ Ensure(test_cell_body_add_entries_offset_overflow)
 	checksum.bytes[17] = i;
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 			small_string, 5, &out);
-	assert_equal(out.size, 5);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			 (sizeof(struct cell_body_entry) + 10) + 
 			 (sizeof(struct cell_body_entry) + 15) + 
@@ -350,7 +336,6 @@ Ensure(test_cell_body_add_entries_offset_overwrite_hole)
 		cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 			string, 10, &out);
 		assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-		assert_equal(out.size, 10);
 		assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			(i + 1) * (sizeof(struct cell_body_entry) + 10));
 		assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -364,7 +349,6 @@ Ensure(test_cell_body_add_entries_offset_overwrite_hole)
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 			larger_string, 15, &out);
 	assert_equal(out.offset, (sizeof(struct cell_body_entry) + 10));
-	assert_equal(out.size, 15);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			 (sizeof(struct cell_body_entry) + 10) + 
 			 (sizeof(struct cell_body_entry) + 15));
@@ -382,7 +366,6 @@ Ensure(test_cell_body_add_entries_offset_overwrite_hole)
 	checksum.bytes[17] = i;
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 			very_large_string, 25, &out);
-	assert_equal(out.size, 25);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			 (sizeof(struct cell_body_entry) + 10) + 
 			 (sizeof(struct cell_body_entry) + 25));
@@ -421,7 +404,6 @@ Ensure(test_cell_body_add_entries_offset_over_top)
 		cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 			string, 10, &out);
 		assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-		assert_equal(out.size, 10);
 		assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			(i + 1) * (sizeof(struct cell_body_entry) + 10));
 		assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -435,7 +417,6 @@ Ensure(test_cell_body_add_entries_offset_over_top)
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 			very_large_string, 25, &out);
 	assert_equal(out.offset, 4 * (sizeof(struct cell_body_entry) + 10));
-	assert_equal(out.size, 25);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			 4 * (sizeof(struct cell_body_entry) + 10) + 
 			 (sizeof(struct cell_body_entry) + 25));
@@ -474,7 +455,6 @@ Ensure(test_cell_body_add_entries_offset_small_buffer)
 		cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 			string, 10, &out);
 		assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-		assert_equal(out.size, 10);
 		assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			(i + 1) * (sizeof(struct cell_body_entry) + 10));
 		assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -487,7 +467,6 @@ Ensure(test_cell_body_add_entries_offset_small_buffer)
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 		string, 10, &out);
 	assert_equal(out.offset, 0);
-	assert_equal(out.size, 10);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 		 (sizeof(struct cell_body_entry) + 10));
 	assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -524,7 +503,6 @@ Ensure(test_cell_body_add_entries_small_buffer_header_pushdown)
 		cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 			string, 10, &out);
 		assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-		assert_equal(out.size, 10);
 		assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			(i + 1) * (sizeof(struct cell_body_entry) + 10));
 		assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -540,7 +518,6 @@ Ensure(test_cell_body_add_entries_small_buffer_header_pushdown)
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 		string, 10, &out);
 	assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-	assert_equal(out.size, 10);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 		(i + 1) * (sizeof(struct cell_body_entry) + 10));
 	assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -552,7 +529,6 @@ Ensure(test_cell_body_add_entries_small_buffer_header_pushdown)
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 		string, 10, &out);
 	assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-	assert_equal(out.size, 10);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 		(i + 1) * (sizeof(struct cell_body_entry) + 10));
 	assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -564,7 +540,6 @@ Ensure(test_cell_body_add_entries_small_buffer_header_pushdown)
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 		string, 10, &out);
 	assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-	assert_equal(out.size, 10);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 		(i + 1) * (sizeof(struct cell_body_entry) + 10));
 	assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -576,7 +551,6 @@ Ensure(test_cell_body_add_entries_small_buffer_header_pushdown)
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 		string, 10, &out);
 	assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-	assert_equal(out.size, 10);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 		(i + 1) * (sizeof(struct cell_body_entry) + 10));
 	assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -622,7 +596,6 @@ Ensure(test_cell_body_add_entries_small_buffer_header_pushdown_free)
 		cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 			string, 10, &out);
 		assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-		assert_equal(out.size, 10);
 		assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			(i + 1) * (sizeof(struct cell_body_entry) + 10));
 		assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -648,7 +621,6 @@ Ensure(test_cell_body_add_entries_small_buffer_header_pushdown_free)
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 		string, 10, &out);
 	assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-	assert_equal(out.size, 10);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 		(i + 1) * (sizeof(struct cell_body_entry) + 10));
 	assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -660,7 +632,6 @@ Ensure(test_cell_body_add_entries_small_buffer_header_pushdown_free)
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 		string, 10, &out);
 	assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-	assert_equal(out.size, 10);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 		(i + 1) * (sizeof(struct cell_body_entry) + 10));
 	assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -672,7 +643,6 @@ Ensure(test_cell_body_add_entries_small_buffer_header_pushdown_free)
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 		string, 10, &out);
 	assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-	assert_equal(out.size, 10);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 		(i + 1) * (sizeof(struct cell_body_entry) + 10));
 	assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -684,7 +654,6 @@ Ensure(test_cell_body_add_entries_small_buffer_header_pushdown_free)
 	cell_body_add(&cell.cell_header->cell_body, &cell, &checksum, 
 		string, 10, &out);
 	assert_equal(out.offset, i * (sizeof(struct cell_body_entry) + 10));
-	assert_equal(out.size, 10);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 		(i + 1) * (sizeof(struct cell_body_entry) + 10));
 	assert_equal(cell.cell_header->cell_body.top_entry_offset, 
@@ -732,7 +701,6 @@ Ensure(test_cell_body_add_entries_top_full)
 			string, 124, &out);
 	assert_equal(out.checksum.bytes[17], 23);
 	assert_equal(out.offset, 0);
-	assert_equal(out.size, 124);
 	assert_equal(cell_body_entry->free_space, 0);
 	assert_equal(cell_body_entry->top_entry, 0);
 	assert_equal(cell_body_entry->checksum.bytes[17], 23);
@@ -748,7 +716,6 @@ Ensure(test_cell_body_add_entries_top_full)
 				(char *) cell.cell_header, &checksum, &out), true);
 	assert_equal(out.checksum.bytes[17], 23);
 	assert_equal(out.offset, 0);
-	assert_equal(out.size, 124);
 				
 	checksum_init(&checksum);
 	cell_dir_entry_init(&out);
@@ -757,13 +724,11 @@ Ensure(test_cell_body_add_entries_top_full)
 			another_string, strlen(another_string), &out);
 	assert_equal(out.checksum.bytes[17], 33);
 	assert_equal(out.offset, sizeof(struct cell_body_entry) + 124);
-	assert_equal(out.size, strlen(another_string));
 	cell_dir_entry_init(&out);
 	assert_equal(cell_dir_get_chunk(&cell.cell_header->cell_dir, 
 				(char *) cell.cell_header, &checksum, &out), true);
 	assert_equal(out.checksum.bytes[17], 33);
 	assert_equal(out.offset, sizeof(struct cell_body_entry) + 124);
-	assert_equal(out.size, strlen(another_string));
 
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			2 * sizeof(struct cell_body_entry) + strlen(another_string) + 124);
@@ -785,7 +750,6 @@ Ensure(test_cell_body_add_entries_top_full)
 			third_string, 86, &out);
 	assert_equal(out.checksum.bytes[17], 73);
 	assert_equal(out.offset, 0);
-	assert_equal(out.size, 86);
 	
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 
 			sizeof(struct cell_body_entry) + 86);

@@ -27,20 +27,20 @@ Ensure(test_cell_dir_overflow_add)
 	checksum.bytes[0] = 1;
 	buffer = xmalloc(ONE_MB);
 
-	cell_dir_entry_set(&in, &checksum, 1234, 11);
+	cell_dir_entry_set(&in, &checksum, 11);
 	assert_equal(cell_dir_overflow_add(&cell_dir_overflow, buffer + ONE_MB,
 			       	&in), 1);
 	assert_equal(cell_dir_overflow.overflow_count, 1);
 
 	checksum.bytes[0] = 2;
-	cell_dir_entry_set(&in, &checksum, 2234, 22);
+	cell_dir_entry_set(&in, &checksum, 22);
 	assert_equal(cell_dir_overflow_add(&cell_dir_overflow, buffer + ONE_MB,
                                 &in), 2);
         assert_equal(cell_dir_overflow.overflow_count, 2);
 
 
 	checksum.bytes[0] = 3;
-	cell_dir_entry_set(&in, &checksum, 3234, 33);
+	cell_dir_entry_set(&in, &checksum,  33);
 	assert_equal(cell_dir_overflow_add(&cell_dir_overflow, buffer + ONE_MB,
                                 &in), 3);
         assert_equal(cell_dir_overflow.overflow_count, 3);
@@ -48,21 +48,18 @@ Ensure(test_cell_dir_overflow_add)
 	cell_dir_entry_init(&cell_dir_entry);
 	assert_equal(cell_dir_overflow_get_chunk(&cell_dir_overflow, buffer + ONE_MB,
 				&checksum, &cell_dir_entry), true);
-	assert_equal(cell_dir_entry.size, 3234);
 	assert_equal(cell_dir_entry.offset, 33);
 
 	checksum.bytes[0] = 2;
 	cell_dir_entry_init(&cell_dir_entry);
         assert_equal(cell_dir_overflow_get_chunk(&cell_dir_overflow, buffer + ONE_MB,
                                 &checksum, &cell_dir_entry), true);
-        assert_equal(cell_dir_entry.size, 2234);
         assert_equal(cell_dir_entry.offset, 22);
 
 	checksum.bytes[0] = 1;
         cell_dir_entry_init(&cell_dir_entry);
         assert_equal(cell_dir_overflow_get_chunk(&cell_dir_overflow, buffer + ONE_MB,
                                 &checksum, &cell_dir_entry), true);
-        assert_equal(cell_dir_entry.size, 1234);
         assert_equal(cell_dir_entry.offset, 11);
 
 	checksum.bytes[0] = 99;
@@ -86,20 +83,20 @@ Ensure(test_cell_dir_overflow_remove)
 	checksum.bytes[0] = 1;
 	buffer = xmalloc(ONE_MB);
 
-	cell_dir_entry_set(&in, &checksum, 1234, 11);
+	cell_dir_entry_set(&in, &checksum, 11);
 	assert_equal(cell_dir_overflow_add(&cell_dir_overflow, buffer + ONE_MB,
 			       	&in), 1);
 	assert_equal(cell_dir_overflow.overflow_count, 1);
 
 	checksum.bytes[0] = 2;
-	cell_dir_entry_set(&in, &checksum, 2234, 22);
+	cell_dir_entry_set(&in, &checksum, 22);
 	assert_equal(cell_dir_overflow_add(&cell_dir_overflow, buffer + ONE_MB,
                                 &in), 2);
         assert_equal(cell_dir_overflow.overflow_count, 2);
 
 
 	checksum.bytes[0] = 3;
-	cell_dir_entry_set(&in, &checksum, 3234, 33);
+	cell_dir_entry_set(&in, &checksum, 33);
 	assert_equal(cell_dir_overflow_add(&cell_dir_overflow, buffer + ONE_MB,
                                 &in), 3);
         assert_equal(cell_dir_overflow.overflow_count, 3);

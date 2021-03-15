@@ -27,7 +27,7 @@ Ensure(test_cell_dir_add)
 
         checksum_init(&checksum);
         checksum.bytes[1] = 1;
-	cell_dir_entry_set(&in, &checksum, 34, 26);
+	cell_dir_entry_set(&in, &checksum, 26);
 	cell_dir_add(&cell_dir, buffer + ONE_MB, &in);
 
 	assert_equal(cell_dir_get_chunk(&cell_dir, buffer + ONE_MB, &checksum, &out), true);
@@ -52,17 +52,17 @@ Ensure(test_cell_dir_multi_add)
 	assert_equal(cell_dir_get_chunk(&cell_dir, buffer + ONE_MB, &checksum, &out), false);
 
         checksum.bytes[1] = 1;
-        cell_dir_entry_set(&in, &checksum, 34, 26);
+        cell_dir_entry_set(&in, &checksum, 26);
         cell_dir_add(&cell_dir, buffer + ONE_MB, &in);
         checksum.bytes[1] = 2;
-        cell_dir_entry_set(&in, &checksum, 34, 26);
+        cell_dir_entry_set(&in, &checksum, 26);
         cell_dir_add(&cell_dir, buffer + ONE_MB, &in);
         checksum.bytes[1] = 3;
-        cell_dir_entry_set(&in, &checksum, 34, 26);
+        cell_dir_entry_set(&in, &checksum, 26);
         cell_dir_add(&cell_dir, buffer + ONE_MB, &in);
 	// trigger overflow.
         checksum.bytes[1] = 4;
-        cell_dir_entry_set(&in, &checksum, 34, 26);
+        cell_dir_entry_set(&in, &checksum, 26);
         cell_dir_add(&cell_dir, buffer + ONE_MB, &in);
 
 	checksum.bytes[1] = 2;
@@ -95,14 +95,14 @@ Ensure(test_cell_dir_remove)
 	assert_equal(cell_dir_get_chunk(&cell_dir, buffer + ONE_MB, &checksum, &out), false);
 
         checksum.bytes[1] = 1;
-        cell_dir_entry_set(&in, &checksum, 34, 26);
+        cell_dir_entry_set(&in, &checksum, 26);
         cell_dir_add(&cell_dir, buffer + ONE_MB, &in);
         checksum.bytes[1] = 2;
-        cell_dir_entry_set(&in, &checksum, 34, 26);
+        cell_dir_entry_set(&in, &checksum, 26);
         cell_dir_add(&cell_dir, buffer + ONE_MB, &in);
 
 	checksum.bytes[1] = 5;
-        cell_dir_entry_set(&in, &checksum, 34, 26);
+        cell_dir_entry_set(&in, &checksum, 26);
         cell_dir_add(&cell_dir, buffer + ONE_MB, &in);
 	assert_equal(cell_dir_remove(&cell_dir, buffer + ONE_MB, &checksum), true);
         assert_equal(cell_dir_get_chunk(&cell_dir, buffer + ONE_MB, &checksum, &out), false);
@@ -112,11 +112,11 @@ Ensure(test_cell_dir_remove)
 	assert_equal(cell_dir_get_chunk(&cell_dir, buffer + ONE_MB, &checksum, &out), false);
 
         checksum.bytes[1] = 3;
-        cell_dir_entry_set(&in, &checksum, 34, 26);
+        cell_dir_entry_set(&in, &checksum, 26);
         cell_dir_add(&cell_dir, buffer + ONE_MB, &in);
 	// trigger overflow.
         checksum.bytes[1] = 4;
-        cell_dir_entry_set(&in, &checksum, 34, 26);
+        cell_dir_entry_set(&in, &checksum, 26);
         cell_dir_add(&cell_dir, buffer + ONE_MB, &in);
 
 
