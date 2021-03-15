@@ -3,9 +3,10 @@
 
 #include <stdint.h>
 
-#include "theo/cell_dir_entry.h"
-
 struct cell;
+struct chunk;
+struct cell_dir_entry;
+struct checksum;
 
 struct cell_body {
 	uint32_t top_entry_offset;

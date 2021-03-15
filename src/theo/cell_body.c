@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "theo/cell_body.h"
+#include "theo/cell_header.h"
 #include "theo/cell_body_entry.h"
 #include "theo/cell.h"
 #include "theo/msys.h"
