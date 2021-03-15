@@ -3,15 +3,23 @@
 #include "theo/cell_body.h"
 #include "theo/cell_body_entry.h"
 #include "theo/cell.h"
+#include "theo/msys.h"
+
+
+void cell_body_set_top(struct cell_body_entry *cell_body_entry) {
+	cell_body_entry->free_space = 1;
+	cell_body_entry->top_entry = 1;
+	cell_body_entry->size = 0;
+	return;
+}
+
 
 void cell_body_init(struct cell_body *cell_body, struct cell *cell) {
 	memset(cell_body, 0, sizeof(struct cell_body));
 	struct cell_body_entry *cell_body_entry;
 
 	cell_body_entry = (struct cell_body_entry *) cell->slab;
-	cell_body_entry->free_space = 1;
-	cell_body_entry->top_entry = 1;
-	cell_body_entry->size = 0;
+	cell_body_set_top(cell_body_entry);
 	cell_body_entry->previous_size = 0;
 	cell_body->top_entry_offset = 0;
        	cell_body->next_entry_offset = 0;	
@@ -92,8 +100,7 @@ bool cell_body_add_top(struct cell_body *cell_body,
 	// Add a new cell top entry
 	ptr += buffer_size;
 	cell_body_entry = (struct cell_body_entry *) ptr;
-	cell_body_entry->free_space = 1;
-	cell_body_entry->top_entry = 1;
+	cell_body_set_top(cell_body_entry);
 	cell_body_entry->previous_size = buffer_size;
 
 	// Reset the cell_body
@@ -111,33 +118,32 @@ void cell_body_add_dir_entry(struct cell *cell,
 	struct cell_body_entry *cell_body_entry;
 	char *ptr;
 
+	// Some wastage as we always make sure there is space in the
+	// directory overflow even though we may not need the overflow
+	// to add the directory entry.
 	if (cell_body_free_space(cell_body, cell) >= sizeof(struct cell_dir_entry)) {
 		cell_dir_add(&cell->cell_header->cell_dir, (char *) cell->cell_header,
 		   cell_dir_entry);
 		goto out;
 	}
 
-	// Need to free up some space.
+	// Need to free up some space. Delete the entry below
+	// top and move top back to free up space.
 	offset = cell_body->top_entry_offset;
 	ptr = cell->slab + offset;
 	cell_body_entry = (struct cell_body_entry *) ptr;
 	offset -= (cell_body_entry->previous_size + sizeof(struct cell_body_entry));
 	ptr = cell->slab + offset;
 	cell_body_entry = (struct cell_body_entry *) ptr;
-	if (!cell_body_entry_free(cell_body_entry)) {
-		cell_dir_remove(&cell->cell_header->cell_dir, cell->slab - sizeof(struct cell_header),
-                                &cell_body_entry->checksum);
-	}
-	cell_body_entry->free_space = 1;
-	cell_body_entry->top_entry = 1;
-	cell_body_entry->size = 0;
-
-	if (cell_body->top_entry_offset == cell_body->next_entry_offset) {
-		// Before we pushed top down it was the next_entry_offset so
-		// need to reset next_entry_offset
-		cell_body->next_entry_offset = offset;
-	}
+	// Entry below top should never free.
+	ALWAYS(!cell_body_entry_free(cell_body_entry));
+	// Remove the entry from the cell directory.
+	cell_dir_remove(&cell->cell_header->cell_dir, cell->slab - sizeof(struct cell_header),
+			&cell_body_entry->checksum);
+	cell_body_set_top(cell_body_entry);
 	cell_body->top_entry_offset = offset;
+	// Removing a single entry must provide enough space to add a directory entry.
+	ALWAYS(cell_body_free_space(cell_body, cell) >= sizeof(struct cell_dir_entry));
 	cell_dir_add(&cell->cell_header->cell_dir, (char *) cell->cell_header,
 		   cell_dir_entry);
 
@@ -164,6 +170,7 @@ void cell_body_add_offset(struct cell_body *cell_body,
 		cell_dir_remove(&cell->cell_header->cell_dir, cell->slab - sizeof(struct cell_header), 
 				&cell_body_entry->checksum);
 	}
+	cell_body_entry->free_space = 0;
 
 	if (cell_body_entry->size == buffer_size) {
 		// entry matches required size, just need to update the entry and
@@ -177,6 +184,7 @@ void cell_body_add_offset(struct cell_body *cell_body,
 		goto out;
 	}
 
+	// Do we have enough space to add entry.
 	cell_body_entry_ptr = cell_body_entry;
 	free_space = cell_body_entry->size;
 	required_space = buffer_size + sizeof(struct cell_body_entry);
@@ -185,8 +193,8 @@ void cell_body_add_offset(struct cell_body *cell_body,
 		cell_body_entry_ptr = (struct cell_body_entry *) ptr;
 		if (cell_body_entry_top(cell_body_entry_ptr)) {
 			// Hit the top --- reset the cell_body_entry so that it is now the top
-			// and pass over to be handled cell_body_add_top
-			cell_body_entry->top_entry = 1;
+			// and pass over to be handled by cell_body_add_top.
+			cell_body_set_top(cell_body_entry);
 			cell_body->top_entry_offset = cell_body->next_entry_offset;
 			cell_body_add_top(cell_body, cell, checksum, buffer, buffer_size, cell_dir_entry);
 			goto out;
@@ -197,6 +205,17 @@ void cell_body_add_offset(struct cell_body *cell_body,
                                 &cell_body_entry_ptr->checksum);
 		}
 		free_space += cell_body_entry_ptr->size + sizeof(struct cell_body_entry);
+	}
+
+	// Check we have not reached the top
+	ptr += cell_body_entry_ptr->size + sizeof(struct cell_body_entry);
+	cell_body_entry_ptr = (struct cell_body_entry *) ptr;
+	if (cell_body_entry_top(cell_body_entry_ptr)) {
+		// next entry is actually the top.
+		cell_body_set_top(cell_body_entry);
+		cell_body->top_entry_offset = cell_body->next_entry_offset;
+		cell_body_add_top(cell_body, cell, checksum, buffer, buffer_size, cell_dir_entry);
+		goto out;
 	}
 
 	cell_body_write_chunk(cell_body_entry, checksum, buffer, buffer_size);
@@ -236,16 +255,19 @@ void cell_body_add(struct cell_body *cell_body,
 	
 	ptr = cell->slab + cell_body->next_entry_offset;
 	next_cell_body_entry = (struct cell_body_entry *) ptr;
-	if (cell_body_entry_top(next_cell_body_entry)) {
-		if (cell_body_add_top(cell_body, cell, checksum, buffer, buffer_size, cell_dir_entry)) {
-			goto out;
-		} else {
-			cell->cell_header->cell_body.next_entry_offset = 0;
-		}
+
+	if (!cell_body_entry_top(next_cell_body_entry)) {
+		// Not at top - add at offset
+		cell_body_add_offset(cell_body, cell, checksum, buffer, buffer_size, cell_dir_entry);
+		goto out;
 	}
 
-	cell_body_add_offset(cell_body, cell, checksum, buffer, buffer_size, cell_dir_entry);
-
+	// Try to add to top.
+	if (!cell_body_add_top(cell_body, cell, checksum, buffer, buffer_size, cell_dir_entry)) {
+		// Adding to top failed, reset to start of cell and insert.
+		cell->cell_header->cell_body.next_entry_offset = 0;
+		cell_body_add_offset(cell_body, cell, checksum, buffer, buffer_size, cell_dir_entry);
+	}
 out:
 	return;
 }
