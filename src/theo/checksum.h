@@ -32,4 +32,6 @@ void checksum_init(struct checksum *checksum);
 
 int checksum_compare(struct checksum *first, struct checksum *second);
 
+void checksum_gen(struct checksum *checksum, char *buffer, uint32_t buffer_length);
+
 #endif

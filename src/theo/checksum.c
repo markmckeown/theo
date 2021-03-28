@@ -1,5 +1,6 @@
 /**
     Copyright 2021 WANdisco
+    Author Mark Mc Keown
 
     This file is part of Libtheo.
 
@@ -14,9 +15,11 @@
     GNU Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
-    along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+    along with Libtheo.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include <string.h>
+
+#include "isa-l_crypto.h"
 
 #include "theo/checksum.h"
 
@@ -29,3 +32,15 @@ void checksum_init(struct checksum *checksum) {
 int checksum_compare(struct checksum *first, struct checksum *second) {
 	return memcmp(first, second, sizeof(struct checksum));
 }
+
+
+void checksum_gen(struct checksum *checksum, char *buffer, 
+		uint32_t buffer_length) {
+	struct mh_sha256_ctx ctx;
+
+	mh_sha256_init(&ctx);
+	mh_sha256_update(&ctx, buffer, buffer_length);
+	mh_sha256_finalize(&ctx, (uint32_t *) &checksum->bytes);
+	return;
+}
+

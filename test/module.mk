@@ -29,7 +29,7 @@ VALGRIND_LD_LIBRARY   :=
 VALGRIND_TEST_EXE     := $(CGREEN_DEBUG)
 
 
-CGREEN_LIBS     := -Wl,-Bdynamic -ltheo -lcgreen -lpthread
+CGREEN_LIBS     := -Wl,-Bdynamic -ltheo -lcgreen -lpthread -lisal_crypto
 ifeq "$(OS)" "Linux"
 GCREEN_LINK_DIR        := -L$(GENERATED_LIB) -L$(GENERATED_LIB)/$(CGREEN_LIB_DIR)
 VALGRIND_LD_LIBRARY    := $(GENERATED_LIB):$(GENERATED_LIB)/x86_64-linux-gnu:$(DEBUG_LIBDIR)
