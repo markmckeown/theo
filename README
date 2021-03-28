@@ -27,6 +27,12 @@ as the CPU will cache data before writing back to memory -
 we need to flush this data in a similar way to how
 fysnc is used to flush disk writes. 
 
+chunk_streamer
+==============
+
+chunk_streamer is a chunker that uses an Intel Rolling
+Hash for chunking. It stores new chunks in the cache_manager.
+
 Cell
 ====
 
