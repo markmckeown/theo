@@ -8,6 +8,8 @@ ISA_L_DIR:=third-party/isa-l_crypto
 
 isa_l: $(ISA_OUT_LIB)/libisal_crypto.a
 
+isa-l_crypto.h: $(ISA_OUT_LIB)/libisal_crypto.a
+
 $(ISA_OUT_LIB)/libisal_crypto.a: 
 	@printf "Making $(ISA_L_OUT)\n"
 	@(cd $(ISA_L_DIR) && ./autogen.sh && ./configure --prefix=$(ISA_OUT_DIR) --libdir=$(ISA_OUT_LIB) && make && make install)
