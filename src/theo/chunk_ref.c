@@ -22,15 +22,16 @@
 #include "theo/chunk_ref.h"
 #include "theo/checksum.h"
 
-
-void chunk_ref_init(struct chunk_ref *chunk_ref) {
+void chunk_ref_init(struct chunk_ref *chunk_ref)
+{
 	memset(chunk_ref, 0, sizeof(struct chunk_ref));
 	checksum_init(&chunk_ref->checksum);
 	return;
 }
 
 void chunk_ref_set(struct chunk_ref *chunk_ref, char *buffer,
-		uint32_t buffer_size) {
+		   uint32_t buffer_size)
+{
 	checksum_gen(&chunk_ref->checksum, buffer, buffer_size);
 	chunk_ref->buffer = buffer;
 	chunk_ref->buffer_size = buffer_size;

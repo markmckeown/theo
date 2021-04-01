@@ -28,27 +28,24 @@
 #include "./mocks.inc"
 #include "./main.h"
 
-
 #define ONE_MB 1024*1024
-
-
 
 Ensure(test_cell_init)
 {
 	struct cell cell;
-	char* buffer;
+	char *buffer;
 
 	buffer = xmalloc(ONE_MB);
 	memset(buffer, 0, ONE_MB);
 	cell_init(&cell, buffer, ONE_MB);
-	assert_equal(cell_header_sane(cell.cell_header), true);	
+	assert_equal(cell_header_sane(cell.cell_header), true);
 
 	assert_equal(cell.cell_header->cell_body.top_entry_offset, 0);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 0);
 
 	// Now load again.
 	cell_init(&cell, buffer, ONE_MB);
-	assert_equal(cell_header_sane(cell.cell_header), true);	
+	assert_equal(cell_header_sane(cell.cell_header), true);
 	assert_equal(cell.cell_header->cell_body.top_entry_offset, 0);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 0);
 
@@ -58,7 +55,7 @@ Ensure(test_cell_init)
 Ensure(test_cell_add)
 {
 	struct cell cell;
-	char* buffer;
+	char *buffer;
 	char *string = "a string";
 	struct checksum checksum;
 	struct chunk chunk;
@@ -66,20 +63,20 @@ Ensure(test_cell_add)
 	buffer = xmalloc(ONE_MB);
 	memset(buffer, 0, ONE_MB);
 	cell_init(&cell, buffer, ONE_MB);
-	assert_equal(cell_header_sane(cell.cell_header), true);	
+	assert_equal(cell_header_sane(cell.cell_header), true);
 
 	assert_equal(cell.cell_header->cell_body.top_entry_offset, 0);
 	assert_equal(cell.cell_header->cell_body.next_entry_offset, 0);
 
-
 	checksum_init(&checksum);
 	checksum.bytes[3] = 23;
-	assert_equal(cell_add_chunk(&cell, &checksum, string, strlen(string)), 1);
+	assert_equal(cell_add_chunk(&cell, &checksum, string, strlen(string)),
+		     1);
 	// second attempt to add fails
-	assert_equal(cell_add_chunk(&cell, &checksum, string, strlen(string)), 0);
+	assert_equal(cell_add_chunk(&cell, &checksum, string, strlen(string)),
+		     0);
 	assert_equal(cell_byte_count(&cell), strlen(string));
 	assert_equal(cell_entry_count(&cell), 1);
-
 
 	assert_equal(cell_has_chunk(&cell, &checksum), 1);
 	chunk_init(&chunk);
@@ -93,7 +90,7 @@ Ensure(test_cell_add)
 
 	// Now load again.
 	cell_init(&cell, buffer, ONE_MB);
-	assert_equal(cell_header_sane(cell.cell_header), true);	
+	assert_equal(cell_header_sane(cell.cell_header), true);
 
 	checksum.bytes[3] = 23;
 	assert_equal(cell_has_chunk(&cell, &checksum), 1);
@@ -107,7 +104,6 @@ Ensure(test_cell_add)
 
 	xfree(buffer);
 }
-
 
 /**
  * Create the Test suite.

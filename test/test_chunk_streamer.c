@@ -31,7 +31,6 @@
 
 #define FOUR_MB 4*1024*1024ull
 
-
 Ensure(test_chunk_streamer_init)
 {
 	int ret_t = 0;
@@ -40,9 +39,8 @@ Ensure(test_chunk_streamer_init)
 	struct cache_manager cache_manager;
 
 	cache_manager_init(&cache_manager);
-	ret_t = cache_manager_open_cache(&cache_manager,
-                        filename, FOUR_MB);
-        assert_equal(ret_t, 0);
+	ret_t = cache_manager_open_cache(&cache_manager, filename, FOUR_MB);
+	assert_equal(ret_t, 0);
 
 	chunk_streamer_init(&chunk_streamer, &cache_manager);
 
@@ -61,11 +59,10 @@ Ensure(test_chunk_streamer_random_buffer)
 	char retained[3000];
 
 	cache_manager_init(&cache_manager);
-	ret_t = cache_manager_open_cache(&cache_manager,
-                        filename, FOUR_MB);
-        assert_equal(ret_t, 0);
+	ret_t = cache_manager_open_cache(&cache_manager, filename, FOUR_MB);
+	assert_equal(ret_t, 0);
 	chunk_streamer_init(&chunk_streamer, &cache_manager);
-	
+
 	memset(buffer, 0, CHUNKER_MAX_CHUNK_SIZE);
 	srand(0);
 	for (i = 0; i < 30000; i++) {
@@ -82,7 +79,6 @@ Ensure(test_chunk_streamer_random_buffer)
 	assert_equal(chunk_streamer.chunk_added, 1);
 	assert_equal(chunk_streamer.chunk_hit, 1);
 
-
 	cache_manager_release(&cache_manager);
 	msys_unlink(filename);
 }
@@ -98,11 +94,10 @@ Ensure(test_chunk_streamer_random_full_buffer)
 	char retained[30000];
 
 	cache_manager_init(&cache_manager);
-	ret_t = cache_manager_open_cache(&cache_manager,
-                        filename, FOUR_MB);
-        assert_equal(ret_t, 0);
+	ret_t = cache_manager_open_cache(&cache_manager, filename, FOUR_MB);
+	assert_equal(ret_t, 0);
 	chunk_streamer_init(&chunk_streamer, &cache_manager);
-	
+
 	memset(buffer, 0, CHUNKER_MAX_CHUNK_SIZE);
 	srand(0);
 	for (i = 0; i < 128000; i++) {
@@ -117,18 +112,16 @@ Ensure(test_chunk_streamer_random_full_buffer)
 	chunk_streamer_process_buffer(&chunk_streamer, buffer, 128000);
 	assert_equal(chunk_streamer.chunk_added, 13);
 	assert_equal(chunk_streamer.chunk_hit, 13);
-	
+
 	cache_manager_release(&cache_manager);
 	cache_manager_init(&cache_manager);
-	ret_t = cache_manager_open_cache(&cache_manager,
-                        filename, FOUR_MB);
-        assert_equal(ret_t, 0);
+	ret_t = cache_manager_open_cache(&cache_manager, filename, FOUR_MB);
+	assert_equal(ret_t, 0);
 	chunk_streamer_init(&chunk_streamer, &cache_manager);
 
 	chunk_streamer_process_buffer(&chunk_streamer, buffer, 128000);
 	assert_equal(chunk_streamer.chunk_added, 0);
 	assert_equal(chunk_streamer.chunk_hit, 13);
-
 
 	cache_manager_release(&cache_manager);
 	msys_unlink(filename);

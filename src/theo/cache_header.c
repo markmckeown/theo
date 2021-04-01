@@ -18,8 +18,8 @@
 */
 #include "theo/cache_header.h"
 
-
-void cache_header_init(struct cache_header *cache_header, uint64_t cell_count) {
+void cache_header_init(struct cache_header *cache_header, uint64_t cell_count)
+{
 	if (cache_header->cache_magic == CACHE_HEADER_MAGIC) {
 		goto out;
 	}

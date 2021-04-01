@@ -25,7 +25,6 @@
 #include <sys/stat.h>
 #include <stdio.h>
 
-
 #include "theo/cache_manager.h"
 #include "theo/cache_metrics.h"
 #include "theo/chunk.h"
@@ -34,11 +33,8 @@
 #include "./mocks.inc"
 #include "./main.h"
 
-
 #define FIVE_MB 5*1024*1024ull
 #define FOUR_MB 4*1024*1024ull
-
-
 
 Ensure(test_cache_manager_init)
 {
@@ -57,8 +53,7 @@ Ensure(test_cache_manager_init)
 	msys_unlink(filename);
 	memset(&cache_manager, 0, sizeof(struct cache_manager));
 	cache_manager_init(&cache_manager);
-	ret_t = cache_manager_open_cache(&cache_manager,
-			filename, FOUR_MB); 
+	ret_t = cache_manager_open_cache(&cache_manager, filename, FOUR_MB);
 	assert_equal(ret_t, 0);
 	assert_equal(msys_access(filename, W_OK), 0);
 
@@ -67,15 +62,15 @@ Ensure(test_cache_manager_init)
 	assert_equal(statbuf.st_size, FIVE_MB);
 
 	checksum.bytes[0] = 2;
-	assert_equal(cache_manager_add_chunk(&cache_manager, &checksum, 
-			string, strlen(string)), 1);
+	assert_equal(cache_manager_add_chunk(&cache_manager, &checksum,
+					     string, strlen(string)), 1);
 	// second add fails
-	assert_equal(cache_manager_add_chunk(&cache_manager, &checksum, 
-			string, strlen(string)), 0);
+	assert_equal(cache_manager_add_chunk(&cache_manager, &checksum,
+					     string, strlen(string)), 0);
 	assert_equal(cache_manager_has_chunk(&cache_manager, &checksum), 1);
 	chunk_init(&chunk);
-	assert_equal(cache_manager_get_chunk(&cache_manager, 
-				&checksum, &chunk), 1);
+	assert_equal(cache_manager_get_chunk(&cache_manager,
+					     &checksum, &chunk), 1);
 	assert_equal(memcmp(string, chunk.buffer, strlen(string)), 0);
 	checksum.bytes[0] = 22;
 	assert_equal(cache_manager_has_chunk(&cache_manager, &checksum), 0);
@@ -83,14 +78,13 @@ Ensure(test_cache_manager_init)
 	cache_manager_release(&cache_manager);
 
 	cache_manager_init(&cache_manager);
-	ret_t = cache_manager_open_cache(&cache_manager,
-			filename, FOUR_MB); 
+	ret_t = cache_manager_open_cache(&cache_manager, filename, FOUR_MB);
 	assert_equal(ret_t, 0);
 	assert_equal(msys_access(filename, W_OK), 0);
 
 	checksum.bytes[0] = 2;
-	assert_equal(cache_manager_get_chunk(&cache_manager, 
-				&checksum, &chunk), 1);
+	assert_equal(cache_manager_get_chunk(&cache_manager,
+					     &checksum, &chunk), 1);
 	assert_equal(memcmp(string, chunk.buffer, strlen(string)), 0);
 
 	cache_manager_release(&cache_manager);
@@ -115,14 +109,13 @@ Ensure(test_cache_manager_reset_file)
 	memset(&statbuf, 0, sizeof(struct stat));
 
 	msys_unlink(filename);
-	fd = msys_open(filename, O_RDWR|O_CREAT);
+	fd = msys_open(filename, O_RDWR | O_CREAT);
 	assert_true(fd > 0);
 	ret_t = msys_close(fd);
 	assert_equal(ret_t, 0);
 
 	cache_manager_init(&cache_manager);
-	ret_t = cache_manager_open_cache(&cache_manager,
-			filename, FOUR_MB); 
+	ret_t = cache_manager_open_cache(&cache_manager, filename, FOUR_MB);
 	assert_equal(ret_t, 0);
 	assert_equal(msys_access(filename, W_OK), 0);
 
@@ -131,12 +124,12 @@ Ensure(test_cache_manager_reset_file)
 	assert_equal(statbuf.st_size, FIVE_MB);
 
 	checksum.bytes[0] = 2;
-	cache_manager_add_chunk(&cache_manager, &checksum, 
-			string, strlen(string));
+	cache_manager_add_chunk(&cache_manager, &checksum,
+				string, strlen(string));
 	assert_equal(cache_manager_has_chunk(&cache_manager, &checksum), 1);
 	chunk_init(&chunk);
-	assert_equal(cache_manager_get_chunk(&cache_manager, 
-				&checksum, &chunk), 1);
+	assert_equal(cache_manager_get_chunk(&cache_manager,
+					     &checksum, &chunk), 1);
 	assert_equal(memcmp(string, chunk.buffer, strlen(string)), 0);
 	checksum.bytes[0] = 22;
 	assert_equal(cache_manager_has_chunk(&cache_manager, &checksum), 0);
@@ -144,14 +137,13 @@ Ensure(test_cache_manager_reset_file)
 	cache_manager_release(&cache_manager);
 
 	cache_manager_init(&cache_manager);
-	ret_t = cache_manager_open_cache(&cache_manager,
-			filename, FOUR_MB); 
+	ret_t = cache_manager_open_cache(&cache_manager, filename, FOUR_MB);
 	assert_equal(ret_t, 0);
 	assert_equal(msys_access(filename, W_OK), 0);
 
 	checksum.bytes[0] = 2;
-	assert_equal(cache_manager_get_chunk(&cache_manager, 
-				&checksum, &chunk), 1);
+	assert_equal(cache_manager_get_chunk(&cache_manager,
+					     &checksum, &chunk), 1);
 	assert_equal(memcmp(string, chunk.buffer, strlen(string)), 0);
 
 	cache_manager_release(&cache_manager);
@@ -174,16 +166,15 @@ Ensure(test_cache_manager_check_metrics)
 	msys_unlink(filename);
 	memset(&cache_manager, 0, sizeof(struct cache_manager));
 	cache_manager_init(&cache_manager);
-	ret_t = cache_manager_open_cache(&cache_manager,
-			filename, FOUR_MB); 
+	ret_t = cache_manager_open_cache(&cache_manager, filename, FOUR_MB);
 	assert_equal(ret_t, 0);
 
 	checksum.bytes[0] = 2;
-	assert_equal(cache_manager_add_chunk(&cache_manager, &checksum, 
-			string, strlen(string)), 1);
+	assert_equal(cache_manager_add_chunk(&cache_manager, &checksum,
+					     string, strlen(string)), 1);
 	// second add fails
-	assert_equal(cache_manager_add_chunk(&cache_manager, &checksum, 
-			string, strlen(string)), 0);
+	assert_equal(cache_manager_add_chunk(&cache_manager, &checksum,
+					     string, strlen(string)), 0);
 	assert_equal(cache_manager_has_chunk(&cache_manager, &checksum), 1);
 
 	cache_metrics_init(&cache_metrics);
@@ -191,16 +182,15 @@ Ensure(test_cache_manager_check_metrics)
 	assert_equal(cache_metrics.byte_count, strlen(string));
 	assert_equal(cache_metrics.entry_count, 1);
 
-
 	chunk_init(&chunk);
-	assert_equal(cache_manager_get_chunk(&cache_manager, 
-				&checksum, &chunk), 1);
+	assert_equal(cache_manager_get_chunk(&cache_manager,
+					     &checksum, &chunk), 1);
 	assert_equal(memcmp(string, chunk.buffer, strlen(string)), 0);
-
 
 	cache_manager_release(&cache_manager);
 	msys_unlink(filename);
 }
+
 /**
  * Create the Test suite.
  */

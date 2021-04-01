@@ -22,8 +22,8 @@
 #include "theo/cell_body_entry.h"
 #include "theo/cell_dir.h"
 
-
-void cell_header_init(struct cell_header *cell_header, struct cell *cell) {
+void cell_header_init(struct cell_header *cell_header, struct cell *cell)
+{
 	memset(cell_header, 0, sizeof(struct cell_header));
 	cell_ic_init(&cell_header->cell_ic);
 	cell_dir_init(&cell_header->cell_dir);
@@ -34,58 +34,63 @@ void cell_header_init(struct cell_header *cell_header, struct cell *cell) {
 	return;
 }
 
-bool cell_header_sane(struct cell_header *cell_header) {
+bool cell_header_sane(struct cell_header *cell_header)
+{
 	bool ret = true;
 
 	if (cell_header->magic != CELL_HEADER_MAGIC) {
-		ret  = false;
+		ret = false;
 		goto out;
 	}
 
 	ret = cell_ic_sane(&cell_header->cell_ic);
 
-out:	
+out:
 	return ret;
 }
 
-uint32_t cell_header_bytes_used(struct cell_header *cell_header) {
+uint32_t cell_header_bytes_used(struct cell_header *cell_header)
+{
 	uint32_t header_size;
 	header_size = sizeof(struct cell_header) +
-	      	cell_header->cell_dir.overflow.overflow_count * sizeof(struct cell_dir_entry);
+	    cell_header->cell_dir.overflow.overflow_count *
+	    sizeof(struct cell_dir_entry);
 	return header_size;
 }
 
-
 void cell_header_remove(struct cell_header *cell_header,
-		struct cell_body_entry *cell_body_entry) {
+			struct cell_body_entry *cell_body_entry)
+{
 	__attribute__((unused)) bool ret = false;
 
-	ret = cell_dir_remove(&cell_header->cell_dir, (char *) cell_header,
-			&cell_body_entry->checksum);
-	ALWAYS(ret); // When called there should always be something to remove.
+	ret = cell_dir_remove(&cell_header->cell_dir, (char *)cell_header,
+			      &cell_body_entry->checksum);
+	ALWAYS(ret);		// When called there should always be something to remove.
 	cell_header->entry_count--;
 	ALWAYS(cell_header->entry_count > 0);
-	cell_header->byte_count = cell_header->byte_count - cell_body_entry->size;
-	ALWAYS(cell_header->byte_count> 0);
+	cell_header->byte_count =
+	    cell_header->byte_count - cell_body_entry->size;
+	ALWAYS(cell_header->byte_count > 0);
 	return;
 }
 
 void cell_header_add(struct cell_header *cell_header,
-		struct cell_dir_entry *cell_dir_entry,
-		uint32_t size) {
+		     struct cell_dir_entry *cell_dir_entry, uint32_t size)
+{
 
-	cell_dir_add(&cell_header->cell_dir, (char *) cell_header, 
-			cell_dir_entry);
+	cell_dir_add(&cell_header->cell_dir, (char *)cell_header,
+		     cell_dir_entry);
 	cell_header->entry_count++;
 	cell_header->byte_count = cell_header->byte_count + size;
 	return;
 }
 
-
-int32_t cell_header_byte_count(struct cell_header *cell_header) {
+int32_t cell_header_byte_count(struct cell_header *cell_header)
+{
 	return cell_header->byte_count;
 }
 
-int32_t cell_header_entry_count(struct cell_header *cell_header) {
+int32_t cell_header_entry_count(struct cell_header *cell_header)
+{
 	return cell_header->entry_count;
 }

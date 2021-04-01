@@ -25,14 +25,17 @@
 #include "theo/cell_body_entry.h"
 #include "theo/msys.h"
 
-void cell_init(struct cell *cell, char *slab, uint32_t slab_size) {
+void cell_init(struct cell *cell, char *slab, uint32_t slab_size)
+{
 	__attribute__((unused)) int ret_t = 0;
 
 	ALWAYS(slab_size > sizeof(struct cell_header));
 	memset(cell, 0, sizeof(struct cell));
 	cell->slab = slab;
 	cell->slab_size = slab_size;
-	cell->cell_header = (struct cell_header *) (slab + (slab_size - sizeof(struct cell_header)));
+	cell->cell_header =
+	    (struct cell_header *)(slab +
+				   (slab_size - sizeof(struct cell_header)));
 	if (!cell_header_sane(cell->cell_header)) {
 		cell_header_init(cell->cell_header, cell);
 	}
@@ -41,31 +44,32 @@ void cell_init(struct cell *cell, char *slab, uint32_t slab_size) {
 	return;
 }
 
-void cell_release(struct cell *cell) {
+void cell_release(struct cell *cell)
+{
 	__attribute__((unused)) int ret_t = 0;
 	ret_t = pthread_mutex_destroy(&cell->mutex);
 	ALWAYS(ret_t == 0);
 	return;
 }
 
-bool cell_add_chunk(struct cell *cell, 
-		   struct checksum *checksum, 
-		   char *buffer, 
-		   uint32_t buffer_size) {
+bool cell_add_chunk(struct cell *cell,
+		    struct checksum *checksum,
+		    char *buffer, uint32_t buffer_size)
+{
 	bool ret = true;
 	__attribute__((unused)) int ret_t = 0;
 	struct cell_dir_entry cell_dir_entry;
-	
+
 	cell_dir_entry_init(&cell_dir_entry);
-	
+
 	ret_t = pthread_mutex_lock(&cell->mutex);
 	ALWAYS(ret_t == 0);
 
 	// Is the buffer already added?
-	if (cell_dir_get_chunk(&cell->cell_header->cell_dir, 
-			cell->slab + (cell->slab_size - sizeof(struct cell_header)),
-			checksum,
-			&cell_dir_entry)) {
+	if (cell_dir_get_chunk(&cell->cell_header->cell_dir,
+			       cell->slab + (cell->slab_size -
+					     sizeof(struct cell_header)),
+			       checksum, &cell_dir_entry)) {
 		ret = false;
 		goto out;
 	}
@@ -73,7 +77,7 @@ bool cell_add_chunk(struct cell *cell,
 	cell_ic_on_entry(&cell->cell_header->cell_ic);
 
 	cell_body_add(&cell->cell_header->cell_body, cell,
-			checksum, buffer, buffer_size, &cell_dir_entry);
+		      checksum, buffer, buffer_size, &cell_dir_entry);
 
 	cell_ic_on_exit(&cell->cell_header->cell_ic);
 
@@ -83,12 +87,9 @@ out:
 	return ret;
 }
 
-
-
-
 bool cell_get_chunk(struct cell *cell,
-		struct checksum *checksum,
-		struct chunk *chunk) {
+		    struct checksum *checksum, struct chunk *chunk)
+{
 	bool ret = true;
 	__attribute__((unused)) int ret_t = 0;
 	struct cell_dir_entry cell_dir_entry;
@@ -99,27 +100,27 @@ bool cell_get_chunk(struct cell *cell,
 	ALWAYS(ret_t == 0);
 
 	cell_dir_entry_init(&cell_dir_entry);
-	if (!cell_dir_get_chunk(&cell->cell_header->cell_dir, 
-			cell->slab + (cell->slab_size - sizeof(struct cell_header)),
-			checksum,
-			&cell_dir_entry)) {
+	if (!cell_dir_get_chunk(&cell->cell_header->cell_dir,
+				cell->slab + (cell->slab_size -
+					      sizeof(struct cell_header)),
+				checksum, &cell_dir_entry)) {
 		ret = false;
 		goto out;
 	}
 
 	ptr = cell->slab + cell_dir_entry.offset;
-	cell_body_entry = (struct cell_body_entry *) ptr;
+	cell_body_entry = (struct cell_body_entry *)ptr;
 	ptr += sizeof(struct cell_body_entry);
 	chunk_set(chunk, &cell_dir_entry.checksum, ptr, cell_body_entry->size);
 
-out:	
+out:
 	ret_t = pthread_mutex_unlock(&cell->mutex);
 	ALWAYS(ret_t == 0);
 	return ret;
 }
 
-bool cell_has_chunk(struct cell *cell,
-		struct checksum *checksum) {
+bool cell_has_chunk(struct cell *cell, struct checksum *checksum)
+{
 	bool ret;
 	__attribute__((unused)) int ret_t = 0;
 	struct cell_dir_entry cell_dir_entry;
@@ -128,18 +129,18 @@ bool cell_has_chunk(struct cell *cell,
 	ALWAYS(ret_t == 0);
 
 	cell_dir_entry_init(&cell_dir_entry);
-	ret = cell_dir_get_chunk(&cell->cell_header->cell_dir, 
-			cell->slab + (cell->slab_size - sizeof(struct cell_header)),
-			checksum,
-			&cell_dir_entry);
+	ret = cell_dir_get_chunk(&cell->cell_header->cell_dir,
+				 cell->slab + (cell->slab_size -
+					       sizeof(struct cell_header)),
+				 checksum, &cell_dir_entry);
 
 	ret_t = pthread_mutex_unlock(&cell->mutex);
 	ALWAYS(ret_t == 0);
 	return ret;
 }
 
-
-int32_t cell_entry_count(struct cell *cell) {
+int32_t cell_entry_count(struct cell *cell)
+{
 	int32_t ret = 0;
 
 	__attribute__((unused)) int ret_t = 0;
@@ -154,7 +155,8 @@ int32_t cell_entry_count(struct cell *cell) {
 	return ret;
 }
 
-int32_t cell_byte_count(struct cell *cell) {
+int32_t cell_byte_count(struct cell *cell)
+{
 	int32_t ret = 0;
 
 	__attribute__((unused)) int ret_t = 0;
@@ -169,13 +171,15 @@ int32_t cell_byte_count(struct cell *cell) {
 	return ret;
 }
 
-void cell_get_metrics(struct cell *cell, struct cache_metrics *cache_metrics) {
+void cell_get_metrics(struct cell *cell, struct cache_metrics *cache_metrics)
+{
 	__attribute__((unused)) int ret_t = 0;
 	ret_t = pthread_mutex_lock(&cell->mutex);
 	ALWAYS(ret_t == 0);
 
-	cache_metrics->byte_count +=  cell_header_byte_count(cell->cell_header);
-	cache_metrics->entry_count += cell_header_entry_count(cell->cell_header);
+	cache_metrics->byte_count += cell_header_byte_count(cell->cell_header);
+	cache_metrics->entry_count +=
+	    cell_header_entry_count(cell->cell_header);
 
 	ret_t = pthread_mutex_unlock(&cell->mutex);
 	ALWAYS(ret_t == 0);

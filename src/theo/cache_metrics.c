@@ -20,8 +20,8 @@
 
 #include "theo/cache_metrics.h"
 
-
-void cache_metrics_init(struct cache_metrics *cache_metrics) {
+void cache_metrics_init(struct cache_metrics *cache_metrics)
+{
 	memset(cache_metrics, 0, sizeof(struct cache_metrics));
 	return;
 }

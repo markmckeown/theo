@@ -23,24 +23,24 @@
 
 #include "theo/checksum.h"
 
-
-void checksum_init(struct checksum *checksum) {
+void checksum_init(struct checksum *checksum)
+{
 	memset(checksum, 0, sizeof(struct checksum));
 	return;
 }
 
-int checksum_compare(struct checksum *first, struct checksum *second) {
+int checksum_compare(struct checksum *first, struct checksum *second)
+{
 	return memcmp(first, second, sizeof(struct checksum));
 }
 
-
-void checksum_gen(struct checksum *checksum, char *buffer, 
-		uint32_t buffer_length) {
+void checksum_gen(struct checksum *checksum, char *buffer,
+		  uint32_t buffer_length)
+{
 	struct mh_sha256_ctx ctx;
 
 	mh_sha256_init(&ctx);
 	mh_sha256_update(&ctx, buffer, buffer_length);
-	mh_sha256_finalize(&ctx, (uint32_t *) &checksum->bytes);
+	mh_sha256_finalize(&ctx, (uint32_t *) & checksum->bytes);
 	return;
 }
-

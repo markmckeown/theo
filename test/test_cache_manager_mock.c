@@ -27,7 +27,6 @@
 #include <errno.h>
 #include <sys/mman.h>
 
-
 #include "theo/cache_manager.h"
 #include "theo/chunk.h"
 #include "theo/checksum.h"
@@ -76,7 +75,6 @@
 #define FOUR_MB 4*1024*1024ull
 #define ONE_MB  1*1024*1024ull
 #define QUARTER_MB  256*1024ull
-
 
 Ensure(test_cache_manager_create_file_1)
 {
@@ -150,7 +148,6 @@ Ensure(test_cache_manager_check_file_3)
 	assert_equal(cache_manager_check_file(filename, ONE_MB), -1);
 }
 
-
 Ensure(test_cache_manager_open_cache_1)
 {
 	struct cache_manager cache_manager;
@@ -162,8 +159,8 @@ Ensure(test_cache_manager_open_cache_1)
 	expect(msys_stat, will_return(-1));
 	// Cannot open file
 	expect(msys_open, will_return(-1));
-	assert_equal(
-		cache_manager_open_cache(&cache_manager, filename, ONE_MB), -1);
+	assert_equal(cache_manager_open_cache(&cache_manager, filename, ONE_MB),
+		     -1);
 
 	cache_manager_release(&cache_manager);
 }
@@ -180,8 +177,8 @@ Ensure(test_cache_manager_open_cache_2)
 	expect(msys_stat, will_return(0));
 	// cache_manager_open_cache cannot open file
 	expect(msys_open, will_return(-1));
-	assert_equal(
-		cache_manager_open_cache(&cache_manager, filename, ONE_MB), -1);
+	assert_equal(cache_manager_open_cache(&cache_manager, filename, ONE_MB),
+		     -1);
 
 	cache_manager_release(&cache_manager);
 }
@@ -198,12 +195,12 @@ Ensure(test_cache_manager_open_cache_3)
 	expect(msys_stat, will_return(0));
 	// cache_manager_open_cache cannot open file
 	expect(msys_open, will_return(5));
-	errno = EOPNOTSUPP; // No dax, but second mmap fails
-	expect(msys_mmap, will_return((void *) -1));
-	expect(msys_mmap, will_return((void *) -1));
+	errno = EOPNOTSUPP;	// No dax, but second mmap fails
+	expect(msys_mmap, will_return((void *)-1));
+	expect(msys_mmap, will_return((void *)-1));
 	expect(msys_close, will_return(0));
-	assert_equal(
-		cache_manager_open_cache(&cache_manager, filename, ONE_MB), -1);
+	assert_equal(cache_manager_open_cache(&cache_manager, filename, ONE_MB),
+		     -1);
 
 	cache_manager_release(&cache_manager);
 }
@@ -221,10 +218,10 @@ Ensure(test_cache_manager_open_cache_4)
 	// cache_manager_open_cache cannot open file
 	expect(msys_open, will_return(5));
 	// errno not set, dax supported but some other failure.
-	expect(msys_mmap, will_return((void *) -1));
+	expect(msys_mmap, will_return((void *)-1));
 	expect(msys_close, will_return(0));
-	assert_equal(
-		cache_manager_open_cache(&cache_manager, filename, ONE_MB), -1);
+	assert_equal(cache_manager_open_cache(&cache_manager, filename, ONE_MB),
+		     -1);
 
 	cache_manager_release(&cache_manager);
 }
@@ -246,8 +243,8 @@ Ensure(test_cache_manager_open_cache_5)
 	expect(cache_init, will_return(0));
 	expect(msys_munmap, will_return(0));
 	expect(msys_close, will_return(0));
-	assert_equal(
-		cache_manager_open_cache(&cache_manager, filename, ONE_MB), 0);
+	assert_equal(cache_manager_open_cache(&cache_manager, filename, ONE_MB),
+		     0);
 	assert_equal(cache_manager.dax, 1);
 	cache_manager_release(&cache_manager);
 }

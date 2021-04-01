@@ -34,7 +34,6 @@
 #define LARGE_MB 128*1024*1024ull
 #define READ_BUFFER_SIZE 65536
 
-
 Ensure(test_chunk_streamer_file)
 {
 	int ret_t = 0;
@@ -48,41 +47,43 @@ Ensure(test_chunk_streamer_file)
 	msys_unlink(filename);
 
 	cache_manager_init(&cache_manager);
-	ret_t = cache_manager_open_cache(&cache_manager,
-                        filename, LARGE_MB);
-        assert_equal(ret_t, 0);
+	ret_t = cache_manager_open_cache(&cache_manager, filename, LARGE_MB);
+	assert_equal(ret_t, 0);
 	chunk_streamer_init(&chunk_streamer, &cache_manager);
 
 	fd = msys_open(dickens, O_RDONLY);
 	assert_true(fd != -1);
 	uint32_t base_size = 0;
 	for (;;) {
-		ret_t = read(fd, read_buffer + base_size, READ_BUFFER_SIZE - base_size);
+		ret_t =
+		    read(fd, read_buffer + base_size,
+			 READ_BUFFER_SIZE - base_size);
 		if (ret_t < 0) {
 			break;
 		}
 		if (ret_t == 0) {
 			break;
 		}
-		chunk_streamer_process_buffer(&chunk_streamer, read_buffer, ret_t + base_size);
-		base_size = chunk_streamer_flush_retained(&chunk_streamer, read_buffer, READ_BUFFER_SIZE);
-	} 
+		chunk_streamer_process_buffer(&chunk_streamer, read_buffer,
+					      ret_t + base_size);
+		base_size =
+		    chunk_streamer_flush_retained(&chunk_streamer, read_buffer,
+						  READ_BUFFER_SIZE);
+	}
 	msys_close(fd);
 
-        assert_equal(chunk_streamer.chunk_added, 1021);
-        assert_equal(chunk_streamer.chunk_hit, 0);
+	assert_equal(chunk_streamer.chunk_added, 1021);
+	assert_equal(chunk_streamer.chunk_hit, 0);
 	struct cache_metrics cache_metrics;
 	cache_manager_cache_metrics(&cache_manager, &cache_metrics);
 	assert_equal(cache_metrics.entry_count, 1021);
 	assert_equal(cache_metrics.byte_count, 10185212);
 
-
 	// Close and re-open cache_manager.
 	cache_manager_release(&cache_manager);
 	cache_manager_init(&cache_manager);
-	ret_t = cache_manager_open_cache(&cache_manager,
-                        filename, LARGE_MB);
-        assert_equal(ret_t, 0);
+	ret_t = cache_manager_open_cache(&cache_manager, filename, LARGE_MB);
+	assert_equal(ret_t, 0);
 
 	// Now re-read file but add some bytes to the start
 	chunk_streamer_init(&chunk_streamer, &cache_manager);
@@ -91,26 +92,30 @@ Ensure(test_chunk_streamer_file)
 	base_size = strlen(dickens);
 	memcpy(read_buffer, dickens, strlen(dickens));
 	for (;;) {
-		ret_t = read(fd, read_buffer + base_size, READ_BUFFER_SIZE - base_size);
+		ret_t =
+		    read(fd, read_buffer + base_size,
+			 READ_BUFFER_SIZE - base_size);
 		if (ret_t < 0) {
 			break;
 		}
 		if (ret_t == 0) {
 			break;
 		}
-		chunk_streamer_process_buffer(&chunk_streamer, read_buffer, ret_t + base_size);
-		base_size = chunk_streamer_flush_retained(&chunk_streamer, read_buffer, READ_BUFFER_SIZE);
-	} 
+		chunk_streamer_process_buffer(&chunk_streamer, read_buffer,
+					      ret_t + base_size);
+		base_size =
+		    chunk_streamer_flush_retained(&chunk_streamer, read_buffer,
+						  READ_BUFFER_SIZE);
+	}
 	msys_close(fd);
 
 	// We lose one block.
-        assert_equal(chunk_streamer.chunk_added, 1);
-        assert_equal(chunk_streamer.chunk_hit, 1020);
+	assert_equal(chunk_streamer.chunk_added, 1);
+	assert_equal(chunk_streamer.chunk_hit, 1020);
 
 	cache_manager_release(&cache_manager);
 	msys_unlink(filename);
 }
-
 
 /**
  * Create the Test suite.

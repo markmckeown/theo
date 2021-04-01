@@ -23,7 +23,8 @@
 #include "./mocks.inc"
 #include "./main.h"
 
-Ensure(test_cell_ic_sanity) {
+Ensure(test_cell_ic_sanity)
+{
 	struct cell_ic cell_ic;
 	cell_ic_init(&cell_ic);
 	assert_equal(cell_ic.exit_code, 0);
@@ -31,7 +32,8 @@ Ensure(test_cell_ic_sanity) {
 	assert_equal(cell_ic_sane(&cell_ic), true);
 }
 
-Ensure(test_cell_ic_setting) {
+Ensure(test_cell_ic_setting)
+{
 	struct cell_ic cell_ic;
 	cell_ic_init(&cell_ic);
 	assert_equal(cell_ic.exit_code, 0);

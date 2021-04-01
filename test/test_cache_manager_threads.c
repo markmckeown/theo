@@ -27,7 +27,6 @@
 #include <pthread.h>
 #include <stdlib.h>
 
-
 #include "theo/cache_manager.h"
 #include "theo/chunk.h"
 #include "theo/checksum.h"
@@ -35,18 +34,17 @@
 #include "./mocks.inc"
 #include "./main.h"
 
-
 #define FIVE_MB 5*1024*1024ull
 #define HUNDRED_MB 100*1024*1024ull
 #define FOUR_MB 4*1024*1024ull
 #define ONE_MB 1024*1024ull
 
-
-void * add_entry(void *ptr) {
+void *add_entry(void *ptr)
+{
 	char string[23000];
 	struct chunk chunk;
 	struct checksum checksum;
-	struct cache_manager *cache_manager = (struct cache_manager *) ptr;
+	struct cache_manager *cache_manager = (struct cache_manager *)ptr;
 	int i, j, passed;
 
 	chunk_init(&chunk);
@@ -57,8 +55,8 @@ void * add_entry(void *ptr) {
 		for (i = 0; i < CHECKSUM_SIZE; i++) {
 			checksum.bytes[i] = rand();
 		}
-		cache_manager_add_chunk(cache_manager, &checksum, 
-				string, (rand() % 23000) + 2000);
+		cache_manager_add_chunk(cache_manager, &checksum,
+					string, (rand() % 23000) + 2000);
 		if (cache_manager_has_chunk(cache_manager, &checksum) != 1) {
 			passed = 0;
 			break;
@@ -67,9 +65,6 @@ void * add_entry(void *ptr) {
 	assert_equal(passed, 1);
 	return NULL;
 }
-
-
-
 
 Ensure(test_cache_manager_thread_1)
 {
@@ -85,8 +80,7 @@ Ensure(test_cache_manager_thread_1)
 	msys_unlink(filename);
 	memset(&cache_manager, 0, sizeof(struct cache_manager));
 	cache_manager_init(&cache_manager);
-	ret_t = cache_manager_open_cache(&cache_manager,
-			filename, HUNDRED_MB); 
+	ret_t = cache_manager_open_cache(&cache_manager, filename, HUNDRED_MB);
 	assert_equal(ret_t, 0);
 	assert_equal(msys_access(filename, W_OK), 0);
 
@@ -95,17 +89,16 @@ Ensure(test_cache_manager_thread_1)
 	assert_equal(statbuf.st_size, HUNDRED_MB + ONE_MB);
 
 	for (i = 0; i < 10; i++) {
-		assert_equal(pthread_create(&thread[i], NULL, add_entry, 
-			(void*) &cache_manager), 0);
+		assert_equal(pthread_create(&thread[i], NULL, add_entry,
+					    (void *)&cache_manager), 0);
 	}
-	for (i = 0; i < 10; i++) { 
+	for (i = 0; i < 10; i++) {
 		pthread_join(thread[i], NULL);
 	}
 
 	cache_manager_release(&cache_manager);
 	msys_unlink(filename);
 }
-
 
 /**
  * Create the Test suite.

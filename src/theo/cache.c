@@ -27,11 +27,9 @@
 #include "theo/msys.h"
 #include "theo/xmalloc.h"
 
-
-
 int cache_init(struct cache *cache,
-                char         *cache_buffer,
-                uint64_t      cache_buffer_size) {
+	       char *cache_buffer, uint64_t cache_buffer_size)
+{
 	uint64_t slots = 0;
 	uint64_t cell_count = 0;
 	uint64_t i = 0;
@@ -40,12 +38,12 @@ int cache_init(struct cache *cache,
 	struct cell *cell;
 
 	memset(cache, 0, sizeof(struct cache));
-	slots = cache_buffer_size/cell_size;
+	slots = cache_buffer_size / cell_size;
 	ALWAYS(slots >= 2);
 
 	cell_count = slots - 1;
 	ptr = cache_buffer;
-	cache->cache_header = (struct cache_header *) ptr;
+	cache->cache_header = (struct cache_header *)ptr;
 	cache_header_init(cache->cache_header, cell_count);
 
 	ptr += CACHE_CELL_SIZE;
@@ -56,12 +54,14 @@ int cache_init(struct cache *cache,
 		cell_init(cell, ptr, cell_size);
 		cell++;
 		ptr += CACHE_CELL_SIZE;
-	}	
+	}
 
 	return 0;
 }
 
-struct cell* cache_get_cell_index(struct cache *cache,struct checksum *checksum) {
+struct cell *cache_get_cell_index(struct cache *cache,
+				  struct checksum *checksum)
+{
 	uint64_t checksum_part = 0;
 	uint64_t index = 0;
 	struct cell *cell;
@@ -75,14 +75,16 @@ struct cell* cache_get_cell_index(struct cache *cache,struct checksum *checksum)
 }
 
 bool cache_add_chunk(struct cache *cache, struct checksum *checksum,
-		char *buffer, uint32_t buffer_size) {
+		     char *buffer, uint32_t buffer_size)
+{
 	struct cell *cell;
 
 	cell = cache_get_cell_index(cache, checksum);
 	return cell_add_chunk(cell, checksum, buffer, buffer_size);
 }
 
-bool cache_has_chunk(struct cache *cache, struct checksum *checksum) {
+bool cache_has_chunk(struct cache *cache, struct checksum *checksum)
+{
 	struct cell *cell;
 
 	cell = cache_get_cell_index(cache, checksum);
@@ -90,15 +92,17 @@ bool cache_has_chunk(struct cache *cache, struct checksum *checksum) {
 }
 
 bool cache_get_chunk(struct cache *cache, struct checksum *checksum,
-                struct chunk *chunk) {
+		     struct chunk *chunk)
+{
 	struct cell *cell;
 
 	cell = cache_get_cell_index(cache, checksum);
 	return cell_get_chunk(cell, checksum, chunk);
 }
 
-void cache_release(struct cache *cache) {
-	struct cell *cell;	
+void cache_release(struct cache *cache)
+{
+	struct cell *cell;
 	uint64_t i = 0;
 
 	if (cache->cells == 0) {
@@ -109,7 +113,7 @@ void cache_release(struct cache *cache) {
 	for (i = 0; i < cache->cache_header->cell_count; i++) {
 		cell_release(cell);
 		cell++;
-	}	
+	}
 
 	xfree(cache->cells);
 	cache->cells = 0;
@@ -117,10 +121,9 @@ out:
 	return;
 }
 
-
-void cache_get_metrics(struct cache *cache, 
-		struct cache_metrics *cache_metrics) {
-	struct cell *cell;	
+void cache_get_metrics(struct cache *cache, struct cache_metrics *cache_metrics)
+{
+	struct cell *cell;
 	uint64_t i = 0;
 
 	cache_metrics_init(cache_metrics);
@@ -128,7 +131,7 @@ void cache_get_metrics(struct cache *cache,
 	for (i = 0; i < cache->cache_header->cell_count; i++) {
 		cell_get_metrics(cell, cache_metrics);
 		cell++;
-	}	
+	}
 
 	return;
 }

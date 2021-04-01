@@ -18,7 +18,6 @@
     along with Libtheo.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include <string.h>
 
 #include "theo/chunk_streamer.h"
@@ -26,7 +25,8 @@
 #include "theo/cache_manager.h"
 
 int chunk_streamer_init(struct chunk_streamer *chunk_streamer,
-		struct cache_manager *cache_manager) {
+			struct cache_manager *cache_manager)
+{
 	int ret = 0;
 	memset(chunk_streamer, 0, sizeof(struct chunk_streamer));
 	ret = chunker_init(&chunk_streamer->chunker);
@@ -35,7 +35,8 @@ int chunk_streamer_init(struct chunk_streamer *chunk_streamer,
 }
 
 int chunk_streamer_process_buffer(struct chunk_streamer *chunk_streamer,
-		char *buffer, uint32_t buffer_size) {
+				  char *buffer, uint32_t buffer_size)
+{
 	int ret = 0;
 	int ret_t = 0;
 	uint32_t buffer_left;
@@ -46,20 +47,21 @@ int chunk_streamer_process_buffer(struct chunk_streamer *chunk_streamer,
 	buffer_left = buffer_size;
 	for (;;) {
 		chunk_ref_init(&chunk_ref);
-		ret_t = chunker_chunk_buffer(&chunk_streamer->chunker, 
-			       &chunk_ref, ptr, buffer_left);
+		ret_t = chunker_chunk_buffer(&chunk_streamer->chunker,
+					     &chunk_ref, ptr, buffer_left);
 		if (ret_t == CHUNKER_NOT_FOUND) {
 			// Buffer fully porcessed.
 			break;
 		}
 
 		if (cache_manager_has_chunk(chunk_streamer->cache_manager,
-						&chunk_ref.checksum)) {
+					    &chunk_ref.checksum)) {
 			chunk_streamer->chunk_hit++;
 		} else {
-			cache_manager_add_chunk(chunk_streamer->cache_manager, 
-				&chunk_ref.checksum, chunk_ref.buffer, 
-				chunk_ref.buffer_size);
+			cache_manager_add_chunk(chunk_streamer->cache_manager,
+						&chunk_ref.checksum,
+						chunk_ref.buffer,
+						chunk_ref.buffer_size);
 			chunk_streamer->chunk_added++;
 		}
 		ptr += chunk_ref.buffer_size;
@@ -69,11 +71,11 @@ int chunk_streamer_process_buffer(struct chunk_streamer *chunk_streamer,
 	return ret;
 }
 
-
 uint32_t chunk_streamer_flush_retained(struct chunk_streamer *chunk_streamer,
-                char *buffer, uint32_t buffer_length) {
+				       char *buffer, uint32_t buffer_length)
+{
 	uint32_t ret;
-	ret = chunker_flush_retained(&chunk_streamer->chunker, 
-			buffer, buffer_length);
+	ret = chunker_flush_retained(&chunk_streamer->chunker,
+				     buffer, buffer_length);
 	return ret;
 }

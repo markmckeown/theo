@@ -28,15 +28,12 @@
 #include "./mocks.inc"
 #include "./main.h"
 
-
 #define FIVE_MB 5*1024*1024
-
-
 
 Ensure(test_cache_init)
 {
 	struct cache cache;
-	char* buffer;
+	char *buffer;
 
 	buffer = xmalloc(FIVE_MB);
 	memset(buffer, 0, FIVE_MB);
@@ -54,7 +51,6 @@ Ensure(test_cache_init)
 
 	xfree(buffer);
 }
-
 
 Ensure(test_cache_add)
 {

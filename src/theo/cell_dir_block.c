@@ -22,31 +22,35 @@
 #include "theo/checksum.h"
 #include "theo/msys.h"
 
-void cell_dir_block_init(struct cell_dir_block *cell_dir_block) {
+void cell_dir_block_init(struct cell_dir_block *cell_dir_block)
+{
 	memset(cell_dir_block, 0, sizeof(struct cell_dir_block));
 	return;
 }
 
-bool cell_dir_block_add(struct cell_dir_block *cell_dir_block, 
-		        struct cell_dir_entry *cell_dir_entry) {
+bool cell_dir_block_add(struct cell_dir_block *cell_dir_block,
+			struct cell_dir_entry *cell_dir_entry)
+{
 	bool ret = false;
 	int i = 0;
 
 	for (i = 0; i < CELL_DIR_BLOCK_ENTRIES; i++) {
 		if (cell_dir_block->entries[i].set == 0) {
-			cell_dir_entry_copy(&cell_dir_block->entries[i], cell_dir_entry);
+			cell_dir_entry_copy(&cell_dir_block->entries[i],
+					    cell_dir_entry);
 			cell_dir_block->entry_count++;
 			ret = true;
 			break;
 		}
 	}
 
-	return ret;	
+	return ret;
 }
 
-
-struct cell_dir_entry* cell_dir_block_find(struct cell_dir_block *cell_dir_block,
-                          struct checksum *checksum) {
+struct cell_dir_entry *cell_dir_block_find(struct cell_dir_block
+					   *cell_dir_block,
+					   struct checksum *checksum)
+{
 	struct cell_dir_entry *entry = 0;
 	int i = 0;
 
@@ -57,7 +61,8 @@ struct cell_dir_entry* cell_dir_block_find(struct cell_dir_block *cell_dir_block
 		if (cell_dir_block->entries[i].set == 0) {
 			continue;
 		}
-		if (checksum_compare(checksum, &cell_dir_block->entries[i].checksum) == 0) {
+		if (checksum_compare
+		    (checksum, &cell_dir_block->entries[i].checksum) == 0) {
 			entry = &cell_dir_block->entries[i];
 			break;
 		}
@@ -68,7 +73,8 @@ out:
 }
 
 bool cell_dir_block_remove(struct cell_dir_block *cell_dir_block,
-		          struct checksum *checksum) {
+			   struct checksum *checksum)
+{
 	bool ret = false;
 	struct cell_dir_entry *entry = 0;
 
@@ -79,17 +85,18 @@ bool cell_dir_block_remove(struct cell_dir_block *cell_dir_block,
 		ret = true;
 	}
 
-	return ret;	
+	return ret;
 }
 
-bool cell_dir_block_full(struct cell_dir_block *cell_dir_block) {
+bool cell_dir_block_full(struct cell_dir_block *cell_dir_block)
+{
 	return (cell_dir_block->entry_count == CELL_DIR_BLOCK_ENTRIES);
 }
 
-
 bool cell_dir_block_get_chunk(struct cell_dir_block *cell_dir_block,
-                             struct checksum *checksum, 
-			     struct cell_dir_entry *cell_dir_entry){
+			      struct checksum *checksum,
+			      struct cell_dir_entry *cell_dir_entry)
+{
 	bool ret = false;
 	struct cell_dir_entry *entry = 0;
 
@@ -102,18 +109,22 @@ bool cell_dir_block_get_chunk(struct cell_dir_block *cell_dir_block,
 	return ret;
 }
 
-
-bool cell_dir_block_overflowed(struct cell_dir_block *cell_dir_block) {
+bool cell_dir_block_overflowed(struct cell_dir_block *cell_dir_block)
+{
 	return (cell_dir_block->overflow_count > 0);
 }
 
-uint32_t cell_dir_block_increment_overflow(struct cell_dir_block *cell_dir_block) {
+uint32_t cell_dir_block_increment_overflow(struct cell_dir_block
+					   *cell_dir_block)
+{
 	cell_dir_block->overflow_count++;
 	return cell_dir_block->overflow_count;
 }
 
-uint32_t cell_dir_block_decrement_overflow(struct cell_dir_block *cell_dir_block) {
+uint32_t cell_dir_block_decrement_overflow(struct cell_dir_block
+					   *cell_dir_block)
+{
 	ALWAYS(cell_dir_block->overflow_count > 0);
 	cell_dir_block->overflow_count--;
 	return cell_dir_block->overflow_count;
-}       
+}

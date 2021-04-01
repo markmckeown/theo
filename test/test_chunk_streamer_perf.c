@@ -38,7 +38,6 @@
 #define BIG_BUFFER 20*1024*1024ull
 #define READ_BUFFER_SIZE 65536
 
-
 Ensure(test_chunk_streamer_file_perf)
 {
 	int ret_t = 0;
@@ -54,15 +53,15 @@ Ensure(test_chunk_streamer_file_perf)
 	file_buffer = xmalloc(BIG_BUFFER);
 
 	cache_manager_init(&cache_manager);
-	ret_t = cache_manager_open_cache(&cache_manager,
-                        filename, LARGE_MB);
-        assert_equal(ret_t, 0);
+	ret_t = cache_manager_open_cache(&cache_manager, filename, LARGE_MB);
+	assert_equal(ret_t, 0);
 	chunk_streamer_init(&chunk_streamer, &cache_manager);
 
 	fd = msys_open(dickens, O_RDONLY);
 	assert_true(fd != -1);
 	for (;;) {
-		ret_t = read(fd, file_buffer + read_size, BIG_BUFFER - read_size);
+		ret_t =
+		    read(fd, file_buffer + read_size, BIG_BUFFER - read_size);
 		if (ret_t < 0) {
 			break;
 		}
@@ -70,7 +69,7 @@ Ensure(test_chunk_streamer_file_perf)
 			break;
 		}
 		read_size += ret_t;
-	} 
+	}
 	msys_close(fd);
 
 	struct tms start_timer, end_timer;
@@ -79,26 +78,27 @@ Ensure(test_chunk_streamer_file_perf)
 	chunk_streamer_process_buffer(&chunk_streamer, file_buffer, read_size);
 	end = times(&end_timer);
 	long clock_tick = sysconf(_SC_CLK_TCK);
-	fprintf(stdout, "[Rate: %8.0f B/s ", read_size / ((end - start) / (double) clock_tick));
-	fprintf(stdout, "Real: %6.2fs ", (end - start) / (double) clock_tick);
+	fprintf(stdout, "[Rate: %8.0f B/s ",
+		read_size / ((end - start) / (double)clock_tick));
+	fprintf(stdout, "Real: %6.2fs ", (end - start) / (double)clock_tick);
 	fprintf(stdout, "User: %6.2fs ",
-			(end_timer.tms_utime - start_timer.tms_utime) / (double) clock_tick);
+		(end_timer.tms_utime -
+		 start_timer.tms_utime) / (double)clock_tick);
 	fprintf(stdout, "Sys: %6.2fs]\n",
-			(end_timer.tms_stime - start_timer.tms_stime) / (double) clock_tick);
+		(end_timer.tms_stime -
+		 start_timer.tms_stime) / (double)clock_tick);
 
-        assert_equal(chunk_streamer.chunk_added, 1021);
-        assert_equal(chunk_streamer.chunk_hit, 0);
+	assert_equal(chunk_streamer.chunk_added, 1021);
+	assert_equal(chunk_streamer.chunk_hit, 0);
 	struct cache_metrics cache_metrics;
 	cache_manager_cache_metrics(&cache_manager, &cache_metrics);
 	assert_equal(cache_metrics.entry_count, 1021);
 	assert_equal(cache_metrics.byte_count, 10185212);
 
-
 	xfree(file_buffer);
 	cache_manager_release(&cache_manager);
 	msys_unlink(filename);
 }
-
 
 /**
  * Create the Test suite.

@@ -30,22 +30,24 @@
 #include "./mocks.inc"
 #include "./main.h"
 
-
 Ensure(test_structs_packed)
 {
 	assert_equal(sizeof(struct cell_ic), 2 * sizeof(uint32_t));
 	assert_equal(sizeof(struct checksum), 32);
 	assert_equal(sizeof(struct cell_dir_entry), 36);
 	assert_equal(sizeof(struct cell_body_entry), 36);
-	assert_equal(sizeof(struct cell_dir_block), 3 * sizeof(struct cell_dir_entry) + sizeof(uint32_t));
+	assert_equal(sizeof(struct cell_dir_block),
+		     3 * sizeof(struct cell_dir_entry) + sizeof(uint32_t));
 	assert_equal(sizeof(struct cell_dir_overflow), sizeof(uint32_t));
-	assert_equal(sizeof(struct cell_dir), 256 * sizeof(struct cell_dir_block) +  sizeof(struct cell_dir_overflow));
+	assert_equal(sizeof(struct cell_dir),
+		     256 * sizeof(struct cell_dir_block) +
+		     sizeof(struct cell_dir_overflow));
 	assert_equal(sizeof(struct cell_body), 2 * sizeof(uint32_t));
-	assert_equal(sizeof(struct cell_header), 3 * sizeof(uint32_t) + sizeof(struct cell_ic) + sizeof(struct cell_body) +
-		       sizeof(struct cell_dir));	
+	assert_equal(sizeof(struct cell_header),
+		     3 * sizeof(uint32_t) + sizeof(struct cell_ic) +
+		     sizeof(struct cell_body) + sizeof(struct cell_dir));
 
 }
-
 
 /**
  * Create the Test suite.

@@ -23,50 +23,57 @@
 #include <sys/stat.h>
 #include <stdio.h>
 
-
-int msys_access(const char *pathname, int mode) {
+int msys_access(const char *pathname, int mode)
+{
 	int ret = access(pathname, mode);
 	return ret;
 }
 
-int msys_unlink(const char *pathname) {
+int msys_unlink(const char *pathname)
+{
 	int ret = remove(pathname);
 	return ret;
 }
 
-
-int msys_open(const char *pathname, int flags) {
+int msys_open(const char *pathname, int flags)
+{
 	int ret = open(pathname, flags, S_IRUSR | S_IWUSR);
 	return ret;
 }
 
-int msys_stat(const char *path, struct stat *buf) {
+int msys_stat(const char *path, struct stat *buf)
+{
 	int ret = stat(path, buf);
 	return ret;
 }
 
-ssize_t msys_write(int fd, const void *buf, size_t count) {
+ssize_t msys_write(int fd, const void *buf, size_t count)
+{
 	ssize_t ret = write(fd, buf, count);
 	return ret;
 }
 
-int msys_close(int fd) {
+int msys_close(int fd)
+{
 	int ret = close(fd);
 	return ret;
 }
 
-int msys_fsync(int fd) {
+int msys_fsync(int fd)
+{
 	int ret = fsync(fd);
 	return ret;
 }
 
 void *msys_mmap(void *addr, size_t length, int prot, int flags, int fd,
-                off_t offset) {
+		off_t offset)
+{
 	void *ret = mmap(addr, length, prot, flags, fd, offset);
 	return ret;
 }
 
-int msys_munmap(void *addr, size_t length) {
+int msys_munmap(void *addr, size_t length)
+{
 	int ret = munmap(addr, length);
 	return ret;
 }

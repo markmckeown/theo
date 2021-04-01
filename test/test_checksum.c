@@ -23,7 +23,8 @@
 #include "./mocks.inc"
 #include "./main.h"
 
-Ensure(test_checksum_init) {
+Ensure(test_checksum_init)
+{
 	struct checksum checksum1;
 	struct checksum checksum2;
 	checksum_init(&checksum1);
@@ -32,7 +33,6 @@ Ensure(test_checksum_init) {
 	checksum1.bytes[0] = 1;
 	assert_equal(checksum_compare(&checksum1, &checksum2), 1);
 }
-
 
 /**
  * Create the Test suite.
