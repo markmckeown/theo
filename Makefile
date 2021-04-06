@@ -92,7 +92,7 @@ INCLUDES      += -I$(GENERATED)/include
 CFLAGS               =
 CFLAGS               += -Wall -Wextra -Werror -fPIC
 DEBUG_CFLAGS         := -O0 -ggdb $(CFLAGS) $(INCLUDES)
-RELEASE_CFLAGS       := -O3 -flto $(CFLAGS) $(INCLUDES)
+RELEASE_CFLAGS       := -O3 -g -flto $(CFLAGS) $(INCLUDES)
 COVERAGE_CFLAGS      := -O0 -fprofile-arcs -ftest-coverage $(CFLAGS) \
 -DCOVERAGE $(INCLUDES)
 

@@ -13,6 +13,7 @@ GENERATED_COVERAGE_RESULTS  := generated/coverage-results
 
 # Valgrind
 GENERATED_VALGRIND  := generated/valgrind
+GENERATED_CACHEGRIND  := generated/cachegrind
 VALGRIND_OPTIONS    := --quiet \
                        --leak-check=full \
                        --log-file=$(GENERATED_VALGRIND)/valgrind.txt \
@@ -24,10 +25,13 @@ HELGRIND_OPTIONS    :=  --quiet \
 			--gen-suppressions=all \
 			--history-level=approx \
 			--log-file=$(GENERATED_VALGRIND)/valgrind.txt
+CACHEGRIND_OPTIONS    := --tool=cachegrind \
+			--trace-children=yes
 VALGRIND_LD_LIBRARY   :=
 # Use debug version to test valgrind with to get symbols
 VALGRIND_TEST_EXE     := $(CGREEN_DEBUG)
 
+CACHEGRIND_TEST_EXE   := $(RELEASE_CGREENDIR)/test_chunk_streamer_perf.exe
 
 CGREEN_LIBS     := -Wl,-Bdynamic -ltheo -lcgreen -lpthread -lisal_crypto
 ifeq "$(OS)" "Linux"
@@ -123,6 +127,24 @@ test-helgrind: $(DEBUG_DIR)
 test-helgrind: VALGRIND_OPTIONS       := $(HELGRIND_OPTIONS)
 test-helgrind: run-test-valgrind
 
+.PHONY: cachegrind
+cachegrind: test-cachegrind
+
+.PHONY: test-cachegrind
+test-cachegrind: TEST_LD_LIBPATH := $(GENERATED_LIB)/x86_64-linux-gnu:$(GENERATED_LIB):$(RELEASE_LIBDIR)
+test-cachegrind: run-test-cachegrind
+
+.PHONY: run-test-cachegrind
+run-test-cachegrind: $(CACHEGRIND_TEST_EXE) $(GENERATED_CACHEGRIND)
+	echo "Make cachegrind...."
+	for testexe in $(CACHEGRIND_TEST_EXE); do \
+		echo "Running $$testexe under cachegrind..." ; \
+		LD_LIBRARY_PATH=$(TEST_LD_LIBPATH) valgrind $(CACHEGRIND_OPTIONS) \
+		--cachegrind-out-file=$(GENERATED_CACHEGRIND)/cachegrind.out.%p.`basename $$testexe` ./$$testexe; \
+	done 
+
+
+
 .PHONY: run-test-valgrind
 run-test-valgrind:$(VALGRIND_TEST_EXE) $(GENERATED_VALGRIND)
 	echo "Make valgrind..."
@@ -144,6 +166,8 @@ run-test-valgrind:$(VALGRIND_TEST_EXE) $(GENERATED_VALGRIND)
 $(GENERATED_VALGRIND):
 	mkdir -p $(GENERATED_VALGRIND)
 
+$(GENERATED_CACHEGRIND):
+	mkdir -p $(GENERATED_CACHEGRIND)
 ###############################################################################
 # Targets to compile tests.
 ###############################################################################

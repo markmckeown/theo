@@ -1,26 +1,28 @@
 WANOpt Byte Cache with DAX
 ==========================
 
-WANOpt dedupe cache is a byte cache of network traffic,
-repeated byte patterns can be replaced with a reference
-to a set of bytes thius offloading bytes from the wire.
+WANOpt dedupe cache is a byte cache of network traffic.
+Repeated byte patterns in network traffic can be replaced 
+with a reference to the set of bytes thus offloading data 
+from the wire.
 
 The larger the dedupe cache the better the performance of
 the WANOpt device, this quickly leads to the case that 
 data has to be paged to and from disk. Paging to and from
 disk impacts performance and care must be taken to optimise
-performance. DAX provides direct access to Non Volatile Main
+performance. DAX (https://www.kernel.org/doc/Documentation/filesystems/dax.txt) 
+provides direct access to Non Volatile Main
 Memory, however care must be taken when writing to NVMM using
 DAX to make sure data is flushed from CPU caches and to 
 ensure the cache does not become corrupted.
 
-This is a simple implementatio of WANOpt that is targetted
+This is a simple implementation of WANOpt that is targetted
 for NVMM (Non-Volatile Main Memory). The behaviour of
 NVMM is different from conventional disk block storage - 
 its byte addressible, there is no paging and no guarantuee
 that a complete "page" is writtent to disk.
 
-Note that we need to system crashes - as the system is a 
+Note that we need to handle system crashes - as the system is a 
 cache we can lose some small amount of data but we cannot 
 compromise the integrity of the cache. Care needs to taken
 as the CPU will cache data before writing back to memory -
@@ -33,22 +35,31 @@ chunk_streamer
 chunk_streamer is a chunker that uses an Intel Rolling
 Hash for chunking. It stores new chunks in the cache_manager.
 
+test/test_chunk_streamer_file.c shows the cache and chunking
+algroithm working together in an end-to-end way.
+
 Cell
 ====
 
 Proposed solution is to design a cache based on a fixed size 
-file. The file will be split into equally sized "cells" which
-each cell able to hold some number of chunks. Note chunks can
-be of unequal length. Each chunk will have associated with it
+file. Using a fixed size file meanss that when used with DAX
+all access will be non-blocking, there are no file meta data
+operations. The file will be explicitly zero filled initially. 
+
+The file will be split into equally sized "cells" with
+each cell able to hold some number of chunks. Note chunks are 
+of unequal length. Each chunk will have associated with it
 a SHA-256 checksum. The checksum will be used to index to the 
 cell that stores the chunk. So given a SHA-256 there is a 
-linear mapping to a cell. It can be imagined there there 
-could be the order of millions of cells.
+linear mapping to a cell, eg we use some subset of
+the SHA-256 as an index to the cell. It can be imagined there 
+could be the order of millions of cells (current cell size is
+1MB).
 
 The cell will have two parts, the body and the head. The
 head will be at top of the cell and will grow down, it will
 contain an index into the body of the cell which will hold
-the data. The body will contain the data and will grow 
+the chunk data. The body will contain the chunk data and will grow 
 up from the bottom of the cell. When the cell is full we
 start at the bottom of the cell again overwriting/deleting
 data in the cell - this is GC of the cache storage. The cell
@@ -56,13 +67,18 @@ is essentially a ring buffer for cache chunks.
 
 Thread safety can be provided by simple mutex, as there
 are so many cells there should be low conflict and read-write
-locks are more expensive. There should be no blocking
-behaviour when holding a lock -- the cache file will be
+locks are more expensive. Each cell will have its own mutex
+and this will not be stored in NVMM. There should be no IO 
+blocking behaviour when holding a lock -- the cache file will be
 pre-allocated and of fixed size, under DAX this should
-have blocking.
+mean no blocking (of course the CPU can switch out the thread).
 
 Cell integrity -- will be handled by two special uint32_t in 
-the cell meta data, entry_counter and exit_counter.
+the cell meta data, entry_counter and exit_counter. The cell is
+corrupt if these two numbers do not match and should be
+re-initialised.
+
+High level approach to adding chunk to cell.
 
 mutex lock on cell
 check entry_counter and exit_counter match 
@@ -83,7 +99,7 @@ Cache
 =====
 
 The cache is a slab of memory that is broken into 1MB areas,
-the first 1MB area holds metadata about the cache and the reset
+the first 1MB area holds metadata about the cache and the rest
 of the 1MB areas are cells. The cache metadata has a mechanism
 to allow cache integrity to be checked. 
 
@@ -108,6 +124,7 @@ make test-helgrind - run tests with helgring - threading and mutex issues.
 make cpd - check for copy and pasting.
 make pmccabe - check code complexity.
 make third-part - build any third party libraries, cgreen.
+make cachegrin - run cachegrind against system.
 
 To run test with gdb/cgdb:
 
