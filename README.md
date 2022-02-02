@@ -1,17 +1,17 @@
-# WANOpt Byte Cache with DAX
+# Data Deduplication using Linux DAX
 
-WANOpt dedupe cache is a byte cache of network traffic.
+WANOpt Data Deduplication cache is a byte cache of network traffic.
 Repeated byte patterns in network traffic can be replaced 
 with a reference to the set of bytes thus offloading data 
-from the wire. This is Data Deduplication. In a similar
-way Data Deduplication can be used to remove duplicate
-byte sequences on a storage device.
+from the wire. In a similar way Data Deduplication can be used 
+to remove duplicate byte sequences on a storage device.
 
 The larger the Data Deduplication cache the better the performance of
 the WANOpt device, this quickly leads to the case that 
 data has to be paged to and from disk. Paging to and from
 disk impacts performance and care must be taken to optimise
-performance. 
+performance, a stall paging data from disk will stall the network
+connection.
 
 DAX (https://www.kernel.org/doc/Documentation/filesystems/dax.txt) 
 provides direct access to Non Volatile Main
