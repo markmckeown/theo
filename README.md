@@ -11,7 +11,10 @@ the WANOpt device, this quickly leads to the case that
 data has to be paged to and from disk. Paging to and from
 disk impacts performance and care must be taken to optimise
 performance, a stall paging data from disk will stall the network
-connection.
+connection. Using DAX and Intel CPU hardware support for generating
+a rolling checksum the system can do 4Gbps using a single core, 
+throughput should scale linearly with core count as there should be
+low contention for resources.
 
 DAX (https://www.kernel.org/doc/Documentation/filesystems/dax.txt) 
 provides direct access to Non Volatile Main
@@ -24,6 +27,7 @@ for NVMM (Non-Volatile Main Memory). The behaviour of
 NVMM is different from conventional disk block storage - 
 its byte addressible, there is no paging and no guarantuee
 that a complete "page" is written to disk.
+
 
 Note that we need to handle system crashes - as the system is a 
 cache we can lose some small amount of data but we cannot 
