@@ -1,26 +1,29 @@
-WANOpt Byte Cache with DAX
-==========================
+# WANOpt Byte Cache with DAX
 
 WANOpt dedupe cache is a byte cache of network traffic.
 Repeated byte patterns in network traffic can be replaced 
 with a reference to the set of bytes thus offloading data 
-from the wire.
+from the wire. This is Data Deduplication. In a similar
+way Data Deduplication can be used to remove duplicate
+byte sequences on a storage device.
 
-The larger the dedupe cache the better the performance of
+The larger the Data Deduplication cache the better the performance of
 the WANOpt device, this quickly leads to the case that 
 data has to be paged to and from disk. Paging to and from
 disk impacts performance and care must be taken to optimise
-performance. DAX (https://www.kernel.org/doc/Documentation/filesystems/dax.txt) 
+performance. 
+
+DAX (https://www.kernel.org/doc/Documentation/filesystems/dax.txt) 
 provides direct access to Non Volatile Main
 Memory, however care must be taken when writing to NVMM using
 DAX to make sure data is flushed from CPU caches and to 
 ensure the cache does not become corrupted.
 
-This is a simple implementation of WANOpt that is targetted
+This is an implementation of Data Deduplication that is targetted
 for NVMM (Non-Volatile Main Memory). The behaviour of
 NVMM is different from conventional disk block storage - 
 its byte addressible, there is no paging and no guarantuee
-that a complete "page" is writtent to disk.
+that a complete "page" is written to disk.
 
 Note that we need to handle system crashes - as the system is a 
 cache we can lose some small amount of data but we cannot 
@@ -29,20 +32,19 @@ as the CPU will cache data before writing back to memory -
 we need to flush this data in a similar way to how
 fysnc is used to flush disk writes. 
 
-chunk_streamer
-==============
+# chunk_streamer
+
 
 chunk_streamer is a chunker that uses an Intel Rolling
 Hash for chunking. It stores new chunks in the cache_manager.
 
 test/test_chunk_streamer_file.c shows the cache and chunking
-algroithm working together in an end-to-end way.
+algrothim working together in an end-to-end way.
 
-Cell
-====
+# cell
 
 Proposed solution is to design a cache based on a fixed size 
-file. Using a fixed size file meanss that when used with DAX
+file. Using a fixed size file means that when used with DAX
 all access will be non-blocking, there are no file meta data
 operations. The file will be explicitly zero filled initially. 
 
@@ -95,8 +97,8 @@ The CPU can reorder memory write back from the cache to memory, and
 in this case persistent memory. So we need to use memory barriers to
 insure the counter and flip-counter are set into persistent memory.
 
-Cache
-=====
+# cache
+
 
 The cache is a slab of memory that is broken into 1MB areas,
 the first 1MB area holds metadata about the cache and the rest
@@ -111,9 +113,16 @@ using mapping form the checksum to cell, eg modulus against the
 first 8 bytes of the checksum against the number of cells. 
 Similarly when looking up a chunk.
 
+Project aims to have very high line and branch coverage.
+Unit tests are run with Valgrind to detect memory issues.
+Unit tests are run with Helgrin to detect threading and race conditions.
+cpd is used for copy and paste detection.
+pmccabe is used to complexity.
 
-Build Targets:
-==============
+cgreen library is used for unit tests and mocking.
+
+# build targets:
+
 make - build library
 make test - run unit tests
 make test-debug - run unit tests in debug mode.
@@ -123,9 +132,9 @@ make test-valgrind - run tests with valgrind - memory issues.
 make test-helgrind - run tests with helgring - threading and mutex issues.
 make cpd - check for copy and pasting.
 make pmccabe - check code complexity.
-make third-part - build any third party libraries, cgreen.
-make cachegrin - run cachegrind against system.
+make third-party - build any third party libraries, cgreen.
+make cachegrind - run cachegrind against system.
 
-To run test with gdb/cgdb:
+To run a particular test with gdb/cgdb:
 
 LD_LIBRARY_PATH=:generated/lib/x86_64-linux-gnu:generated/lib:generated/debug/lib cgdb --args generated/debug/cgreen/test_cell_dir_block.exe test_cell_dir_block_remove
