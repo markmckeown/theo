@@ -127,17 +127,17 @@ cgreen library is used for unit tests and mocking.
 
 # build targets:
 
-make - build library
-make test - run unit tests
-make test-debug - run unit tests in debug mode.
-make test-coverage - run coverage with tests. Target is 100% line and branch
+- make - build library
+- make test - run unit tests
+- make test-debug - run unit tests in debug mode.
+- make test-coverage - run coverage with tests. Target is 100% line and branch
                      coverage.
-make test-valgrind - run tests with valgrind - memory issues.
-make test-helgrind - run tests with helgring - threading and mutex issues.
-make cpd - check for copy and pasting.
-make pmccabe - check code complexity.
-make third-party - build any third party libraries, cgreen.
-make cachegrind - run cachegrind against system.
+- make test-valgrind - run tests with valgrind - memory issues.
+- make test-helgrind - run tests with helgring - threading and mutex issues.
+- make cpd - check for copy and pasting.
+- make pmccabe - check code complexity.
+- make third-party - build any third party libraries, cgreen.
+- make cachegrind - run cachegrind against system.
 
 To run a particular test with gdb/cgdb:
 
